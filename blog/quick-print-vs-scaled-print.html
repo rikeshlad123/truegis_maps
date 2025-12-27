@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      Quick Print vs Scaled Print in TrueGIS: What’s the Difference?
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="When to use Quick Print vs Scaled Print in TrueGIS. Learn how each export works, when to pick it, and how to get reliably crisp results."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/quick-print-vs-scaled-print.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Quick Print vs Scaled Print in TrueGIS: What’s the Difference?"
+    />
+    <meta
+      property="og:description"
+      content="Understand the trade-offs: Quick Print for speed and Scaled Print for true map scale."
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://truegis.co.uk/blog/quick-print-vs-scaled-print.html"
+    />
+    <meta
+      property="og:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Quick Print vs Scaled Print in TrueGIS: What’s the Difference?"
+    />
+    <meta
+      name="twitter:description"
+      content="Pick the right export for the job—speed or true map scale."
+    />
+    <meta
+      name="twitter:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- JSON-LD: BlogPosting -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Quick Print vs Scaled Print in TrueGIS: What’s the Difference?",
+        "description": "A practical guide to when and how to use Quick Print and Scaled Print in TrueGIS, with setup tips for consistent results.",
+        "author": { "@type": "Organization", "name": "TrueGIS" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TrueGIS",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://truegis.co.uk/truegis-maps-logo.png"
+          }
+        },
+        "url": "https://truegis.co.uk/blog/quick-print-vs-scaled-print.html",
+        "mainEntityOfPage": "https://truegis.co.uk/blog/quick-print-vs-scaled-print.html"
+      }
+    </script>
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/about.html">About</a> ·
+        <a href="/contact.html">Contact</a> · <a href="/terms.html">Terms</a> ·
+        <a href="/privacy-policy.html">Privacy</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <article>
+        <h1>Quick Print vs Scaled Print in TrueGIS: What’s the Difference?</h1>
+        <p class="blog-meta">Reading time: ~6 min</p>
+
+        <p>
+          TrueGIS provides two export paths—<strong>Quick Print</strong> and
+          <strong>Scaled Print</strong>. Both are useful, but they’re optimised
+          for different goals. This guide explains each, shows how to set them
+          up properly, and gives troubleshooting tips for edge cases.
+        </p>
+
+        <h2>Quick Print: speed first</h2>
+        <p>
+          <strong>Quick Print</strong> grabs the current map view
+          <em>as you see it</em>. It’s perfect when you need a fast capture:
+        </p>
+        <ul>
+          <li>Share a location sketch with a colleague.</li>
+          <li>Attach a quick map to an email.</li>
+          <li>Capture an idea in the field with minimal clicks.</li>
+        </ul>
+        <p>
+          <em>How to use it:</em> frame your view, make sure the features look
+          legible, then click <strong>Quick Print</strong>. Your browser will
+          generate a file (PDF/PNG depending on your setup) that matches the
+          on-screen composition.
+        </p>
+
+        <h2>Scaled Print: accuracy first</h2>
+        <p>
+          <strong>Scaled Print</strong> respects a fixed map scale, such as
+          <code>1:5,000</code> or <code>1:25,000</code>. When scale matters
+          (tenders, drawings, documentation), use this option.
+        </p>
+        <ol>
+          <li>
+            Choose a <strong>Scale</strong> preset (e.g.,
+            <code>1:10,000</code>).
+          </li>
+          <li>
+            Select <strong>Orientation</strong> (<em>Landscape</em> or
+            <em>Portrait</em>).
+          </li>
+          <li>
+            Toggle <strong>Show Print Area</strong> to visualise the page
+            coverage.
+          </li>
+          <li>Pan/zoom the map so the print frame fits your area perfectly.</li>
+          <li>Click <strong>Scaled Print</strong> to export.</li>
+        </ol>
+
+        <h2>Which should I choose?</h2>
+        <table
+          style="
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.95rem;
+          "
+        >
+          <tr>
+            <td style="border: 1px solid #333; padding: 8px">
+              <strong>Use Quick Print</strong>
+            </td>
+            <td style="border: 1px solid #333; padding: 8px">
+              You’re sharing a draft, need a fast visual, or scale is not
+              critical.
+            </td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #333; padding: 8px">
+              <strong>Use Scaled Print</strong>
+            </td>
+            <td style="border: 1px solid #333; padding: 8px">
+              You need a defined map scale and consistent layout for
+              documentation.
+            </td>
+          </tr>
+        </table>
+
+        <h2>Tips for consistently crisp prints</h2>
+        <ul>
+          <li>
+            <strong>Use the preview frame:</strong> With
+            <em>Show Print Area</em> on, adjust the map until the frame captures
+            exactly what you need.
+          </li>
+          <li>
+            <strong>Style for legibility:</strong> Prefer high contrast; keep
+            fill opacity around 0.3–0.5 for polygons.
+          </li>
+          <li>
+            <strong>Pick the right orientation:</strong> Wide areas print better
+            in <em>Landscape</em>; long corridors in <em>Portrait</em>.
+          </li>
+        </ul>
+
+        <h2>Troubleshooting</h2>
+        <ul>
+          <li>
+            <strong>Lines look heavy on paper:</strong> reduce stroke width
+            before exporting.
+          </li>
+          <li>
+            <strong>Printed area isn’t what I expected:</strong> turn on
+            <em>Show Print Area</em> and re-frame the map—Scaled Print uses that
+            frame.
+          </li>
+          <li>
+            <strong>Scale must be exact:</strong> use <em>Scaled Print</em>, not
+            Quick Print, and confirm the preset (e.g., <code>1:5,000</code>).
+          </li>
+        </ul>
+
+        <hr />
+        <p>
+          For a deeper look at scale and layout, read
+          <a href="/blog/printing-to-scale-in-browser.html"
+            >Printing to Scale in the Browser</a
+          >. For a general tour of the app, see
+          <a href="/blog/truegis-maps-overview.html"
+            >TrueGIS Maps: What It Does, Who It’s For, and How It Works</a
+          >.
+        </p>
+
+        <p><a href="/blog/">← Back to Blog</a></p>
+      </article>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 40px 0; font-size: 14px; color: #888"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

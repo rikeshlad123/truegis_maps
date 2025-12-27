@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vector Tiles vs Raster Tiles: What’s Better for Printing?</title>
+    <meta
+      name="description"
+      content="Understand the tradeoffs between vector and raster tiles for interactive maps and printed exports. Tips for clean, sharp outputs."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/vector-tiles-vs-raster-tiles-printing.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <h1>Vector Tiles vs Raster Tiles: What’s Better for Printing?</h1>
+      <p class="blog-meta">Reading time: ~6 min</p>
+
+      <h2>Raster tiles</h2>
+      <ul>
+        <li>
+          <strong>Pros:</strong> Simple to consume; predictable appearance.
+        </li>
+        <li>
+          <strong>Cons:</strong> Fixed resolution; can look soft at large print
+          sizes.
+        </li>
+      </ul>
+
+      <h2>Vector tiles</h2>
+      <ul>
+        <li>
+          <strong>Pros:</strong> Scalable, styleable in the client; crisp lines.
+        </li>
+        <li>
+          <strong>Cons:</strong> More client work; styling must be considered
+          for print.
+        </li>
+      </ul>
+
+      <h2>Practical guidance</h2>
+      <ul>
+        <li>
+          For <strong>sharp prints</strong>, keep your annotations as vectors.
+        </li>
+        <li>
+          When using raster basemaps,
+          <strong>avoid extreme upscales</strong>—frame the print at native zoom
+          levels.
+        </li>
+        <li>
+          Use <em>Show Print Area</em> in <a href="/">TrueGIS</a> to preview
+          coverage before export.
+        </li>
+      </ul>
+
+      <p>
+        Continue with
+        <a href="/blog/client-vs-server-rendering-web-gis.html"
+          >client vs server rendering</a
+        >
+        or jump to
+        <a href="/blog/inkmap-printing-at-scale.html">Inkmap printing</a>.
+      </p>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 20px; font-size: 14px; color: #ccc"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

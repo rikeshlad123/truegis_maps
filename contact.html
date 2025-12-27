@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact – TrueGIS Maps</title>
+    <meta
+      name="description"
+      content="Contact the TrueGIS Maps team with questions, feedback, or partnership opportunities."
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="truegis-favicon-transparent.png" />
+    <style>
+      .contact-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 20px;
+        color: #fff;
+        line-height: 1.6;
+      }
+
+      .contact-container h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      label {
+        font-size: 15px;
+      }
+
+      input,
+      textarea {
+        padding: 10px;
+        font-size: 15px;
+        background: #1c1d1d;
+        color: #fff;
+        border: 1px solid #333;
+        border-radius: 5px;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+
+      button[type="submit"] {
+        background-color: #1c1d1d;
+        color: #fff;
+        border: 1px solid #444;
+        padding: 12px;
+        font-size: 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button[type="submit"]:hover {
+        background-color: #85ff4c;
+        color: #000;
+      }
+
+      .form-note {
+        font-size: 14px;
+        text-align: center;
+        color: #bbb;
+      }
+
+      .back-link {
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .back-link a {
+        color: #85ff4c;
+        text-decoration: underline;
+      }
+
+      .success-message {
+        text-align: center;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #144d00;
+        color: #85ff4c;
+        margin-top: 20px;
+        font-weight: bold;
+      }
+    </style>
+    <meta name="google-adsense-account" content="ca-pub-9290484412483574" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9290484412483574"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <header>
+      <a href="index.html">
+        <img src="truegis-maps-logo-transparent.png" alt="TrueGIS Maps Logo" />
+      </a>
+    </header>
+
+    <main class="contact-container">
+      <h1>Contact Us</h1>
+      <p>
+        If you have any feedback, suggestions, or business inquiries, feel free
+        to reach out using the form below. We’ll get back to you as soon as
+        possible.
+      </p>
+
+      <form
+        id="contactForm"
+        action="https://formspree.io/f/xpwllpod"
+        method="POST"
+      >
+        <label for="name">Your Name:</label>
+        <input type="text" id="name" name="name" required />
+
+        <label for="email">Your Email:</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="message">Your Message:</label>
+        <textarea id="message" name="message" required></textarea>
+
+        <button type="submit">Send Message</button>
+      </form>
+
+      <div id="successMessage" class="success-message" style="display: none">
+        ✅ Thank you! Your message has been sent.
+      </div>
+
+      <div class="back-link">
+        <a href="https://truegis.co.uk">← Back to TrueGIS Maps</a>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        © 2025 TrueGIS. All rights reserved.
+        <a href="about.html">About</a> |
+        <a href="privacy-policy.html">Privacy Policy</a> |
+        <a href="terms.html">Terms</a> |
+        <a href="contact.html">Contact</a>
+      </p>
+    </footer>
+
+    <script>
+      const form = document.getElementById("contactForm");
+      const successMsg = document.getElementById("successMessage");
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: formData,
+          headers: { Accept: "application/json" },
+        });
+
+        if (response.ok) {
+          form.reset();
+          successMsg.style.display = "block";
+        } else {
+          alert("Something went wrong. Please try again.");
+        }
+      });
+    </script>
+  </body>
+</html>

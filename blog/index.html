@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TrueGIS Blog – Free Mapping Guides & Tutorials</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Web GIS how-tos and practical guides: drawing & styling maps, to-scale printing, OpenLayers vs Leaflet, Inkmap, GeoJSON tips, and more."
+    />
+    <link rel="canonical" href="https://truegis.co.uk/blog/" />
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="TrueGIS Blog – Free Mapping Guides & Tutorials"
+    />
+    <meta
+      property="og:description"
+      content="Learn practical web GIS: draw & style features, precise scaled printing, and modern mapping stacks (OpenLayers, Inkmap, Leaflet)."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://truegis.co.uk/blog/" />
+    <meta
+      property="og:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="TrueGIS Blog – Free Mapping Guides & Tutorials"
+    />
+    <meta
+      name="twitter:description"
+      content="Hands-on web GIS articles: TrueGIS features, OpenLayers vs Leaflet, Inkmap printing, and GeoJSON prep."
+    />
+    <meta
+      name="twitter:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- JSON-LD: Blog listing -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "TrueGIS Blog",
+        "url": "https://truegis.co.uk/blog/",
+        "publisher": {
+          "@type": "Organization",
+          "name": "TrueGIS",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://truegis.co.uk/truegis-maps-logo.png"
+          }
+        },
+        "blogPost": [
+          {
+            "@type": "BlogPosting",
+            "headline": "How to Print Maps Online for Free (Step by Step)",
+            "url": "https://truegis.co.uk/blog/how-to-print-maps-online.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Best Free Alternatives to ArcGIS Online in 2025",
+            "url": "https://truegis.co.uk/blog/best-free-alternatives-arcgis-online.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "TrueGIS Maps Overview: Draw, Style, Print",
+            "url": "https://truegis.co.uk/blog/truegis-maps-overview.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Quick Print vs Scaled Print",
+            "url": "https://truegis.co.uk/blog/quick-print-vs-scaled-print.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Printing to Scale in the Browser",
+            "url": "https://truegis.co.uk/blog/printing-to-scale-in-browser.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Inkmap: Scaled Printing in TrueGIS",
+            "url": "https://truegis.co.uk/blog/inkmap-scaled-printing.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Inkmap: Printing at Scale (Tips)",
+            "url": "https://truegis.co.uk/blog/inkmap-printing-at-scale.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Leaflet vs OpenLayers (2025)",
+            "url": "https://truegis.co.uk/blog/leaflet-vs-openlayers-2025.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Leaflet vs OpenLayers (Fundamentals)",
+            "url": "https://truegis.co.uk/blog/leaflet-vs-openlayers.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "How to Use OpenLayers for Web GIS",
+            "url": "https://truegis.co.uk/blog/how-to-use-openlayers-for-web-gis.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Minimal Leaflet App (Print-Friendly)",
+            "url": "https://truegis.co.uk/blog/minimal-leaflet-app-print-friendly.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Client- vs Server-Rendering in Web GIS",
+            "url": "https://truegis.co.uk/blog/client-vs-server-rendering-web-gis.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Client-Side Geoprocessing with Turf + Web Workers",
+            "url": "https://truegis.co.uk/blog/client-side-geoprocessing-turf-webworkers.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Prepare GeoJSON for TrueGIS",
+            "url": "https://truegis.co.uk/blog/prepare-geojson-for-truegis.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Vector Tiles vs Raster Tiles (Printing)",
+            "url": "https://truegis.co.uk/blog/vector-tiles-vs-raster-tiles-printing.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "GeoDjango + PostGIS Starter (Overview)",
+            "url": "https://truegis.co.uk/blog/geodjango-postgis-starter.html"
+          },
+          {
+            "@type": "BlogPosting",
+            "headline": "Why TrueGIS is Different",
+            "url": "https://truegis.co.uk/blog/why-truegis-is-different.html"
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Site header (no Blog link here; Privacy only in footer) -->
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/about.html">About</a> ·
+        <a href="/contact.html">Contact</a> · <a href="/terms.html">Terms</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <h1>TrueGIS Blog</h1>
+      <p>
+        Learn how to make the most of our free web mapping and printing tool.
+      </p>
+
+      <!-- ==== LIST ALL POSTS ==== -->
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/how-to-print-maps-online.html"
+            >How to Print Maps Online for Free (Step by Step)</a
+          >
+        </h2>
+        <p>
+          Create a printable map in minutes—draw, style, preview the print
+          frame, set scale/orientation, and export.
+        </p>
+        <small class="blog-meta">Reading time: ~6 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/best-free-alternatives-arcgis-online.html"
+            >Best Free Alternatives to ArcGIS Online in 2025</a
+          >
+        </h2>
+        <p>Free browser tools, when to use each, and where TrueGIS fits.</p>
+        <small class="blog-meta">Reading time: ~7 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/truegis-maps-overview.html"
+            >TrueGIS Maps Overview: Draw, Style, Print</a
+          >
+        </h2>
+        <p>
+          What TrueGIS focuses on today: quick drawing, per-feature styling, and
+          precise scaled printing.
+        </p>
+        <small class="blog-meta">Reading time: ~5 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/quick-print-vs-scaled-print.html"
+            >Quick Print vs Scaled Print</a
+          >
+        </h2>
+        <p>
+          When to use fast exports vs exact scale layouts—and tips for crisp
+          output.
+        </p>
+        <small class="blog-meta">Reading time: ~5 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/printing-to-scale-in-browser.html"
+            >Printing to Scale in the Browser</a
+          >
+        </h2>
+        <p>
+          Scale vs DPI basics, orientation choices, and previewing the print
+          frame.
+        </p>
+        <small class="blog-meta">Reading time: ~6 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/inkmap-scaled-printing.html"
+            >Inkmap: Scaled Printing in TrueGIS</a
+          >
+        </h2>
+        <p>
+          How client-side rendering produces precise, to-scale PDF/PNG without
+          uploads.
+        </p>
+        <small class="blog-meta">Reading time: ~7 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/inkmap-printing-at-scale.html"
+            >Inkmap: Printing at Scale (Tips)</a
+          >
+        </h2>
+        <p>
+          Orientation, stroke widths, contrast, and layout tricks for
+          professional prints.
+        </p>
+        <small class="blog-meta">Reading time: ~5 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/leaflet-vs-openlayers-2025.html"
+            >Leaflet vs OpenLayers in 2025</a
+          >
+        </h2>
+        <p>
+          Performance, projections, vector tiles, and developer
+          ergonomics—updated guidance.
+        </p>
+        <small class="blog-meta">Reading time: ~8 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/leaflet-vs-openlayers.html"
+            >Leaflet vs OpenLayers (Fundamentals)</a
+          >
+        </h2>
+        <p>A beginner-friendly comparison for choosing a mapping stack.</p>
+        <small class="blog-meta">Reading time: ~6 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/how-to-use-openlayers-for-web-gis.html"
+            >How to Use OpenLayers for Web GIS</a
+          >
+        </h2>
+        <p>Pragmatic OL patterns for drawing, styling, and exporting maps.</p>
+        <small class="blog-meta">Reading time: ~7 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/minimal-leaflet-app-print-friendly.html"
+            >Minimal Leaflet App (Print-Friendly)</a
+          >
+        </h2>
+        <p>
+          Build a tiny Leaflet app with settings that make printed maps look
+          clean.
+        </p>
+        <small class="blog-meta">Reading time: ~6 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/client-vs-server-rendering-web-gis.html"
+            >Client- vs Server-Rendering in Web GIS</a
+          >
+        </h2>
+        <p>Trade-offs for speed, scale, and cost in modern mapping apps.</p>
+        <small class="blog-meta">Reading time: ~7 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/client-side-geoprocessing-turf-webworkers.html"
+            >Client-Side Geoprocessing with Turf + Web Workers</a
+          >
+        </h2>
+        <p>
+          Keep the UI smooth while running buffers, intersects, and unions in
+          workers.
+        </p>
+        <small class="blog-meta">Reading time: ~9 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/prepare-geojson-for-truegis.html"
+            >Prepare GeoJSON for TrueGIS</a
+          >
+        </h2>
+        <p>
+          Geometry validity, properties, coordinate order, and size
+          considerations.
+        </p>
+        <small class="blog-meta">Reading time: ~5 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/vector-tiles-vs-raster-tiles-printing.html"
+            >Vector Tiles vs Raster Tiles (Printing)</a
+          >
+        </h2>
+        <p>What changes when the final deliverable is paper or PDF.</p>
+        <small class="blog-meta">Reading time: ~6 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/geodjango-postgis-starter.html"
+            >GeoDjango + PostGIS Starter (Overview)</a
+          >
+        </h2>
+        <p>
+          When you do need a backend: basic building blocks for a geospatial
+          stack.
+        </p>
+        <small class="blog-meta">Reading time: ~8 min</small>
+      </article>
+
+      <article class="blog-article">
+        <h2>
+          <a href="/blog/why-truegis-is-different.html"
+            >Why TrueGIS is Different</a
+          >
+        </h2>
+        <p>
+          Local-first, no-upload mapping—fast drawing, clear styling, and
+          precise printing.
+        </p>
+        <small class="blog-meta">Reading time: ~4 min</small>
+      </article>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 20px; font-size: 14px; color: #ccc"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

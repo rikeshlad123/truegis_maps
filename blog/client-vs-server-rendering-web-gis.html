@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client-Side vs Server-Side Rendering in Web GIS</title>
+    <meta
+      name="description"
+      content="When to render maps and features in the browser vs on the server. Performance, cost, and print implications for modern Web GIS."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/client-vs-server-rendering-web-gis.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <h1>Client-Side vs Server-Side Rendering in Web GIS</h1>
+      <p class="blog-meta">Reading time: ~6 min</p>
+
+      <p>
+        Modern Web GIS can render either in the browser (client-side) or on the
+        server before sending images/tiles to the browser. The “right” choice
+        depends on your data size, styling needs, interactivity, and how you
+        plan to <em>print</em>.
+      </p>
+
+      <h2>Client-side rendering (browser)</h2>
+      <ul>
+        <li><strong>Tech:</strong> OpenLayers, Leaflet, WebGL renderers.</li>
+        <li>
+          <strong>Pros:</strong> Low latency interactions, dynamic styling,
+          offline potential, easy annotations.
+        </li>
+        <li>
+          <strong>Cons:</strong> Heavy datasets can affect performance;
+          device-dependent.
+        </li>
+        <li>
+          <strong>Printing:</strong> Works well with TrueGIS because drawings
+          and styles are already in-browser at export time.
+        </li>
+      </ul>
+
+      <h2>Server-side rendering</h2>
+      <ul>
+        <li>
+          <strong>Tech:</strong> Map server produces raster tiles or images.
+        </li>
+        <li>
+          <strong>Pros:</strong> Centralized performance; predictable tile
+          caching; good for huge datasets.
+        </li>
+        <li>
+          <strong>Cons:</strong> Less interactive styling; infrastructure cost;
+          potential lag.
+        </li>
+        <li>
+          <strong>Printing:</strong> Quality depends on source tile resolution;
+          vector overlays still recommended for crisp outputs.
+        </li>
+      </ul>
+
+      <h2>Choosing an approach</h2>
+      <ul>
+        <li>
+          <strong>Small to medium data + interactivity?</strong> Client-side is
+          usually best.
+        </li>
+        <li>
+          <strong>Large datasets or many users?</strong> Consider server-side
+          tiles plus light client overlays.
+        </li>
+        <li>
+          <strong>Need accurate prints?</strong> Keep annotations as vectors and
+          use a scaled layout (see
+          <a href="/blog/inkmap-printing-at-scale.html">Inkmap deep dive</a>).
+        </li>
+      </ul>
+
+      <p>
+        Next: learn the browser stack in
+        <a href="/blog/how-to-use-openlayers-for-web-gis.html"
+          >OpenLayers basics</a
+        >
+        and compare
+        <a href="/blog/leaflet-vs-openlayers.html">Leaflet vs OpenLayers</a>.
+      </p>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 20px; font-size: 14px; color: #ccc"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prepare GeoJSON for TrueGIS and Web GIS Workflows</title>
+    <meta
+      name="description"
+      content="Clean and optimize your GeoJSON from QGIS or GeoPandas for smooth web maps. Styling tips and print best practices for TrueGIS."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/prepare-geojson-for-truegis.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <h1>Prepare GeoJSON for TrueGIS and Web GIS Workflows</h1>
+      <p class="blog-meta">Reading time: ~6 min</p>
+
+      <p>
+        Whether you export from <strong>QGIS</strong> or generate data with
+        <strong>GeoPandas</strong>, a tidy GeoJSON makes your web maps faster
+        and your <em>Scaled Print</em> outputs cleaner.
+      </p>
+
+      <h2>Export tips</h2>
+      <ul>
+        <li>
+          <strong>Simplify geometries</strong> (but keep topology) to reduce
+          size.
+        </li>
+        <li><strong>Use EPSG:4326</strong> for broad web compatibility.</li>
+        <li><strong>Remove unused attributes</strong> to shrink payloads.</li>
+        <li>
+          <strong>Validate</strong> with a linter to catch geometry errors.
+        </li>
+      </ul>
+
+      <h2>Styling for print</h2>
+      <ul>
+        <li>
+          Prefer <strong>thin strokes</strong> and
+          <strong>semi-transparent fills</strong>.
+        </li>
+        <li>Use <strong>high contrast</strong> against your basemap.</li>
+        <li>Preview with <strong>Show Print Area</strong> before exporting.</li>
+      </ul>
+
+      <h2>From data to result</h2>
+      <ol>
+        <li>Create or clean your data in QGIS/GeoPandas.</li>
+        <li>
+          Export to GeoJSON and load in your web map or annotate in
+          <a href="/">TrueGIS</a>.
+        </li>
+        <li>
+          Use <em>Scaled Print</em> for predictable output at 1:5,000, 1:10,000,
+          etc.
+        </li>
+      </ol>
+
+      <p>
+        More to explore:
+        <a href="/blog/how-to-use-openlayers-for-web-gis.html"
+          >OpenLayers guide</a
+        >
+        and <a href="/blog/inkmap-printing-at-scale.html">Inkmap deep dive</a>.
+      </p>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 20px; font-size: 14px; color: #ccc"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

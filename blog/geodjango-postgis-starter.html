@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoDjango + PostGIS Starter: Build a Simple Web GIS Backend</title>
+    <meta
+      name="description"
+      content="Set up a lightweight GeoDjango + PostGIS backend for web GIS. Serve GeoJSON, power your map layers, and export clean prints with TrueGIS."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/geodjango-postgis-starter.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <h1>GeoDjango + PostGIS Starter: Build a Simple Web GIS Backend</h1>
+      <p class="blog-meta">Reading time: ~7 min</p>
+
+      <p>
+        If you need a server-side data source for your web maps,
+        <strong>GeoDjango + PostGIS</strong> is a dependable stack. You can
+        serve GeoJSON to your front-end (Leaflet/OpenLayers) and still use
+        <a href="/">TrueGIS</a> for fast, client-side prints.
+      </p>
+
+      <h2>What you’ll build</h2>
+      <ul>
+        <li>A Django project with GeoDjango enabled.</li>
+        <li>A PostGIS database storing your geometries.</li>
+        <li>A simple endpoint that returns GeoJSON features.</li>
+      </ul>
+
+      <h2>Key steps (high level)</h2>
+      <ol>
+        <li><strong>Install PostGIS</strong> and create a spatial database.</li>
+        <li>
+          <strong>Enable GeoDjango</strong> in your Django project (GDAL/GEOS
+          required).
+        </li>
+        <li>
+          <strong>Create a model</strong> with <code>PointField</code>,
+          <code>LineStringField</code>, or <code>PolygonField</code>.
+        </li>
+        <li>
+          <strong>Expose a view</strong> that serializes features to GeoJSON.
+        </li>
+        <li>
+          <strong>Consume from the browser</strong> using OpenLayers or Leaflet.
+        </li>
+      </ol>
+
+      <h2>Workflow with TrueGIS</h2>
+      <p>
+        Keep your authoritative data in PostGIS/GeoDjango; when you just need a
+        clean print, draw annotations in <strong>TrueGIS</strong> and use
+        <em>Scaled Print</em> for a quick, accurate export.
+      </p>
+
+      <p>
+        Related reading:
+        <a href="/blog/prepare-geojson-for-truegis.html"
+          >Prepare GeoJSON for TrueGIS</a
+        >
+        and
+        <a href="/blog/leaflet-vs-openlayers.html">Leaflet vs OpenLayers</a>.
+      </p>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 20px; font-size: 14px; color: #ccc"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

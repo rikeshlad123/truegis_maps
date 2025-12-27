@@ -1,0 +1,282 @@
+/* =======================
+   Base / Theme
+======================= */
+:root{
+  --bg:#000;
+  --text:#fff;
+  --muted:#ccc;
+  --panel:#1c1d1d;
+  --panel-border:#333;
+  --btn-border:#444;
+  --accent:#85ff4c;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Segoe UI', sans-serif;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* A11y utility */
+.visually-hidden{
+  position:absolute!important;
+  height:1px;width:1px;overflow:hidden;
+  clip:rect(1px,1px,1px,1px);white-space:nowrap;
+}
+
+/* =======================
+   Site Header (generic <header>)
+======================= */
+header{
+  position:relative;           /* for top-right social icons */
+  text-align:center;
+  padding:15px 10px 10px;
+}
+header img{ width:220px; height:auto; }
+header .tagline{
+  font-size:14px; color:var(--muted);
+  margin-top:5px; letter-spacing:.4px;
+}
+
+/* Top-right social icons (img-based) */
+.social-links.top-right{
+  position:absolute; top:10px; right:10px;
+  display:flex; gap:8px;
+}
+.social-links.top-right a{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px;
+}
+.social-links.top-right a img{
+  width:28px; height:28px; display:block;
+  filter:brightness(0) invert(1);
+  transition:transform .2s, opacity .2s, filter .2s;
+}
+.social-links.top-right a:hover img{
+  transform:scale(1.15); opacity:.95;
+  filter:brightness(0) invert(1) drop-shadow(0 0 4px var(--accent));
+}
+.social-links.top-right a:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+
+/* =======================
+   Map
+======================= */
+#map{
+  width:95vw; max-width:1200px; height:60vh;
+  margin:0 auto; border-radius:8px;
+  box-shadow:0 0 10px rgba(0,0,0,.6);
+}
+
+/* =======================
+   Controls
+======================= */
+.control-panel{
+  display:flex; flex-direction:column; align-items:center;
+  gap:20px; max-width:1200px; margin:0 auto; padding:20px 20px 10px;
+}
+.control-group{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+  gap:12px;
+}
+.control-group.center{ justify-content:center; }
+
+.control-group input[type="text"],
+.control-group select{
+  padding:8px 12px; font-size:14px;
+  background:var(--panel); color:var(--text);
+  border:1px solid var(--panel-border); border-radius:4px;
+}
+.control-group input[type="color"],
+.control-group input[type="range"]{ cursor:pointer; }
+
+.control-group label{ font-size:14px; }
+
+.control-panel button{
+  background:var(--panel); color:var(--text);
+  border:1px solid var(--btn-border);
+  padding:10px 16px; font-size:14px; border-radius:6px;
+  cursor:pointer; transition:background .3s, color .3s;
+  min-width:100px;
+}
+.control-panel button:hover{ background:var(--accent); color:#000; }
+
+#drawToggle{ font-weight:700; background:#333; }
+#drawOptions.hidden{ display:none; }
+#drawOptions button{ min-width:90px; }
+
+/* GeoJSON buttons outside control-panel */
+#importGeoJSON,
+#exportGeoJSON{
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--btn-border);
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, border-color .2s ease, transform .05s ease;
+  min-width: 180px;
+
+  display: block;
+  width: min(92vw, 420px);
+  margin: 10px auto 0;
+}
+
+#exportGeoJSON{ margin-bottom: 14px; }
+
+#importGeoJSON:hover,
+#exportGeoJSON:hover{
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+#importGeoJSON:active,
+#exportGeoJSON:active{
+  transform: translateY(1px);
+}
+
+/* Draw button – brighter, clearer hover */
+#drawToggle{
+  background: #2b2b2b;          /* slightly lighter base */
+  font-weight: 700;
+}
+
+#drawToggle:hover{
+  background: var(--accent);    /* same accent */
+  color: #000;
+  box-shadow: 0 0 0 2px rgba(133,255,76,0.35);
+}
+
+
+/* =======================
+   Ads
+======================= */
+.ads-container{
+  display:flex; justify-content:center;
+  padding:20px 0 10px;
+}
+.adsbygoogle{
+  display:block; width:100%; max-width:728px; min-height:100px;
+}
+
+/* =======================
+   Footer
+======================= */
+footer{
+  text-align:center; padding:20px 10px 30px;
+  font-size:15px; color:#aaa;
+}
+footer a{ color:var(--accent); text-decoration:underline; }
+footer strong{ color:var(--text); font-weight:700; }
+
+/* Generic social block (e.g., footer) */
+.social-links{
+  margin-top:10px; display:flex; justify-content:center; gap:10px;
+}
+.social-links a img{
+  width:28px; height:28px;
+  filter:brightness(0) invert(1);
+  transition:transform .2s, opacity .2s, filter .2s;
+}
+.social-links a:hover img{
+  transform:scale(1.15); opacity:.95;
+  filter:brightness(0) invert(1) drop-shadow(0 0 4px var(--accent));
+}
+
+/* =======================
+   Blog – listing & posts
+======================= */
+.blog-header{
+  max-width:1000px; margin:20px auto 10px; padding:0 16px;
+  display:flex; align-items:center; gap:16px; text-align:left;
+}
+.blog-header .brand img{ height:48px; width:auto; display:block; }
+.blog-header .blog-nav{ margin-left:auto; }
+.blog-header .blog-nav a{
+  color:#9be66b; opacity:.85; text-decoration:none; font-weight:600;
+}
+.blog-header .blog-nav a:hover{ opacity:1; text-decoration:underline; }
+
+.blog-wrap{ max-width:880px; margin:0 auto 4rem; padding:0 20px; }
+
+.blog-article{
+  background:#0e0f10;
+  border:1px solid #252628;
+  border-radius:14px;
+  padding:22px 24px;
+  margin:18px 0;
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
+}
+.blog-article h2{ margin:0 0 8px; }
+.blog-article h2 a{ color:#9fe870; text-decoration:none; }
+.blog-article h2 a:hover{ text-decoration:underline; }
+.blog-article p{ color:var(--muted); margin:8px 0 0; }
+.blog-meta{ color:#a6a8ab; font-size:.9rem; margin-top:8px; display:block; }
+
+/* Generic <main> content styles used on some pages */
+main h1{ font-size:28px; margin-bottom:10px; }
+main p{ line-height:1.6; margin:10px 0; color:var(--muted); }
+main article{
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:8px;
+  padding:20px; margin:25px 0;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+main article h2 a{ color:var(--accent); text-decoration:none; }
+main article h2 a:hover{ text-decoration:underline; }
+main small{ color:var(--muted); display:block; margin-top:8px; }
+
+/* =======================
+   Alternate site header (classed)
+======================= */
+.site-header{
+  max-width:1000px; margin:20px auto 10px; padding:0 16px;
+  display:flex; align-items:center; gap:16px;
+}
+.site-header .brand img{ height:48px; width:auto; display:block; }
+.site-header .site-nav{ margin-left:auto; }
+.site-header .site-nav a{
+  color:#9be66b; text-decoration:none; opacity:.9;
+}
+.site-header .site-nav a:hover{ opacity:1; text-decoration:underline; }
+
+/* =======================
+   Responsive
+======================= */
+@media (max-width:768px){
+  header img{ width:160px; }
+  header .tagline{ font-size:13px; }
+
+  #map{ height:50vh; width:100%; }
+
+  .control-panel{ padding:12px; gap:16px; }
+  .control-group{ flex-direction:column; gap:8px; }
+
+  .control-panel button,
+  .control-group input[type="text"],
+  .control-group select{
+    width:100%; font-size:16px;
+  }
+  .control-panel button{ padding:12px; }
+
+  footer{ font-size:14px; padding-bottom:25px; }
+  .social-links.top-right{ top:8px; right:8px; }
+}
+
+@media (max-width:540px){
+  .blog-header,
+  .site-header{ flex-direction:column; gap:8px; }
+  .blog-header .blog-nav,
+  .site-header .site-nav{ margin-left:0; }
+}

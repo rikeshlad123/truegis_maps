@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      Accurate Scaled Map Printing in the Browser with Inkmap – TrueGIS
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="How TrueGIS uses Inkmap for precise, to-scale map printing in your browser. Learn scale vs DPI, landscape vs portrait, and how to preview print area."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/inkmap-scaled-printing.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Accurate Scaled Map Printing in the Browser with Inkmap – TrueGIS"
+    />
+    <meta
+      property="og:description"
+      content="Understand how Inkmap renders true map scale client-side. Practical tips for crisp, printable output."
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://truegis.co.uk/blog/inkmap-scaled-printing.html"
+    />
+    <meta
+      property="og:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Accurate Scaled Map Printing in the Browser with Inkmap – TrueGIS"
+    />
+    <meta
+      name="twitter:description"
+      content="How TrueGIS achieves precise, to-scale printing entirely in the browser using Inkmap."
+    />
+    <meta
+      name="twitter:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- JSON-LD: BlogPosting + Breadcrumbs -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Accurate Scaled Map Printing in the Browser with Inkmap",
+        "description": "How TrueGIS uses Inkmap for precise, to-scale map printing. Learn scale vs DPI, orientation, and print frame preview.",
+        "author": { "@type": "Organization", "name": "TrueGIS" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TrueGIS",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://truegis.co.uk/truegis-maps-logo.png"
+          }
+        },
+        "url": "https://truegis.co.uk/blog/inkmap-scaled-printing.html",
+        "mainEntityOfPage": "https://truegis.co.uk/blog/inkmap-scaled-printing.html"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://truegis.co.uk/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Blog",
+            "item": "https://truegis.co.uk/blog/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Inkmap Scaled Printing"
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <article class="blog-article">
+        <h1>Accurate Scaled Map Printing in the Browser with Inkmap</h1>
+        <p class="blog-meta">Reading time: ~7 min</p>
+
+        <p>
+          <strong>TrueGIS</strong> generates crisp, to-scale printouts directly
+          in your browser. The key is <em>Inkmap</em>, a client-side map
+          rendering library that converts your current map view and vector
+          overlays into a page-sized canvas at a known DPI and scale.
+        </p>
+
+        <h2>Scale vs DPI: why both matter</h2>
+        <ul>
+          <li>
+            <strong>Map scale</strong> (e.g., 1:5,000) sets the ground distance
+            represented by one unit on paper.
+          </li>
+          <li>
+            <strong>DPI</strong> controls rasterization density when the page is
+            drawn; higher DPI preserves fine linework.
+          </li>
+        </ul>
+        <p>
+          TrueGIS uses sensible defaults so you don’t need to tune DPI—just
+          choose a scale and orientation that fits your area of interest.
+        </p>
+
+        <h2>The print frame preview</h2>
+        <p>
+          Toggle <em>Show Print Area</em> to see the exact page coverage
+          overlaid on the map. Pan/zoom until the frame captures what you need
+          at your chosen scale.
+        </p>
+
+        <h2>Landscape vs Portrait</h2>
+        <ul>
+          <li>
+            <strong>Landscape</strong>: corridors running east-west, wider
+            extents.
+          </li>
+          <li><strong>Portrait</strong>: north-south routes, tall coverage.</li>
+        </ul>
+
+        <h2>Vector styling tips for print</h2>
+        <ul>
+          <li>Use semi-transparent fills so the basemap remains legible.</li>
+          <li>
+            Reduce stroke width before printing if lines look too bold at small
+            scales.
+          </li>
+          <li>Prefer high-contrast feature colors for grayscale printers.</li>
+        </ul>
+
+        <h2>Quick Print vs Scaled Print</h2>
+        <ul>
+          <li><strong>Quick Print</strong>: exports the current view fast.</li>
+          <li>
+            <strong>Scaled Print</strong>: honors your scale, orientation, and
+            print frame for precise layouts.
+          </li>
+        </ul>
+
+        <hr />
+        <p>
+          <strong>Try it now:</strong> open <a href="/">TrueGIS Maps</a>, switch
+          on <em>Show Print Area</em>, pick a scale, and hit
+          <em>Scaled Print</em> for a clean, to-scale output.
+        </p>
+
+        <p><a href="/blog/">← Back to Blog</a></p>
+      </article>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 40px 0; font-size: 14px; color: #888"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Printing to Scale in the Browser with TrueGIS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A practical guide to map scale in TrueGIS. Learn what 1:5,000 means, how the print preview works, and how to avoid common pitfalls when exporting."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/printing-to-scale-in-browser.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Printing to Scale in the Browser with TrueGIS"
+    />
+    <meta
+      property="og:description"
+      content="Understand scale presets, preview frames, and export settings for accurate, professional prints."
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://truegis.co.uk/blog/printing-to-scale-in-browser.html"
+    />
+    <meta
+      property="og:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Printing to Scale in the Browser with TrueGIS"
+    />
+    <meta
+      name="twitter:description"
+      content="A no-nonsense primer on true-scale map exports in TrueGIS."
+    />
+    <meta
+      name="twitter:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- JSON-LD: BlogPosting -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Printing to Scale in the Browser with TrueGIS",
+        "description": "How to work with scale presets, preview print area, and export accurate, legible maps from TrueGIS.",
+        "author": { "@type": "Organization", "name": "TrueGIS" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TrueGIS",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://truegis.co.uk/truegis-maps-logo.png"
+          }
+        },
+        "url": "https://truegis.co.uk/blog/printing-to-scale-in-browser.html",
+        "mainEntityOfPage": "https://truegis.co.uk/blog/printing-to-scale-in-browser.html"
+      }
+    </script>
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/about.html">About</a> ·
+        <a href="/contact.html">Contact</a> · <a href="/terms.html">Terms</a> ·
+        <a href="/privacy-policy.html">Privacy</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <article>
+        <h1>Printing to Scale in the Browser with TrueGIS</h1>
+        <p class="blog-meta">Reading time: ~7 min</p>
+
+        <p>
+          If your deliverable requires a map at a known scale—say
+          <code>1:5,000</code>—you should use TrueGIS’s
+          <strong>Scaled Print</strong>. This article explains what scale means,
+          how to frame your map with the preview, and how to avoid the most
+          common pitfalls.
+        </p>
+
+        <h2>What does 1:5,000 actually mean?</h2>
+        <p>
+          A map scale of <code>1:5,000</code> means
+          <em
+            >1 unit on paper equals 5,000 of the same units in the real
+            world</em
+          >. If you measure 2 cm on the print, that represents 100 m on the
+          ground. TrueGIS’s scale presets (e.g., <code>1:2,500</code>,
+          <code>1:5,000</code>, <code>1:10,000</code>, <code>1:25,000</code>,
+          <code>1:50,000</code>) give you practical, familiar options.
+        </p>
+
+        <h2>Set up a scaled export</h2>
+        <ol>
+          <li>
+            Open <a href="/">TrueGIS</a> and sketch your area of interest
+            (points, lines, polygons, circles, squares).
+          </li>
+          <li>
+            In <strong>Print Settings</strong>, select a
+            <strong>Scale</strong> preset and choose
+            <strong>Orientation</strong> (<em>Landscape</em> or
+            <em>Portrait</em>).
+          </li>
+          <li>
+            Toggle <strong>Show Print Area</strong> to reveal the print frame.
+          </li>
+          <li>
+            Pan/zoom so your key content sits neatly inside the frame—leave a
+            margin if you’ll add notes later.
+          </li>
+          <li>Click <strong>Scaled Print</strong> to export.</li>
+        </ol>
+
+        <h2>Styling for readability at scale</h2>
+        <ul>
+          <li>
+            <strong>Contrast is king:</strong> Choose feature colors that pop
+            against the basemap.
+          </li>
+          <li>
+            <strong>Use semi-transparent fills:</strong> 0.3–0.5 keeps the
+            basemap visible under polygons.
+          </li>
+          <li>
+            <strong>Right-size your strokes:</strong> Thicker
+            <em>looks</em> better on screen, but can print heavy—dial it back
+            before export.
+          </li>
+        </ul>
+
+        <h2>Preview frame = predictable output</h2>
+        <p>
+          The preview frame shows your exact page coverage at the chosen
+          scale/orientation. If your area doesn’t fit, either change the
+          orientation or adjust the scale to a more appropriate preset.
+        </p>
+
+        <h2>Common pitfalls (and fixes)</h2>
+        <ul>
+          <li>
+            <strong>Printed area doesn’t match expectations:</strong> Ensure
+            <em>Show Print Area</em> was on and the frame was positioned
+            correctly before exporting.
+          </li>
+          <li>
+            <strong>Scale accuracy concerns:</strong> Always use
+            <em>Scaled Print</em>—Quick Print is for fast captures, not
+            controlled scale.
+          </li>
+          <li>
+            <strong>Features look too bold in print:</strong> Lower stroke width
+            or opacity, then re-export.
+          </li>
+        </ul>
+
+        <h2>When to use Quick Print instead</h2>
+        <p>
+          If you don’t need a defined scale and just want to share the current
+          view (e.g., a question to a teammate),
+          <a href="/blog/quick-print-vs-scaled-print.html">Quick Print</a> is
+          faster.
+        </p>
+
+        <hr />
+        <p>
+          That’s it. Use the scale presets, preview the frame, style for
+          legibility, and export. For a tour of everything the app can do, see
+          <a href="/blog/truegis-maps-overview.html"
+            >TrueGIS Maps: What It Does, Who It’s For, and How It Works</a
+          >.
+        </p>
+
+        <p><a href="/blog/">← Back to Blog</a></p>
+      </article>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 40px 0; font-size: 14px; color: #888"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

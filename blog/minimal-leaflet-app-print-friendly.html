@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A Minimal Leaflet App That’s Print-Friendly</title>
+    <meta
+      name="description"
+      content="Build a tiny Leaflet map with crisp vector annotations and print-friendly styling. Tips you can apply before exporting with TrueGIS."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/minimal-leaflet-app-print-friendly.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <h1>A Minimal Leaflet App That’s Print-Friendly</h1>
+      <p class="blog-meta">Reading time: ~7 min</p>
+
+      <p>
+        Leaflet is small, readable, and ideal for simple maps. This guide shows
+        a minimal setup with vector overlays and styles that hold up when you
+        print or export.
+      </p>
+
+      <h2>Core ideas</h2>
+      <ul>
+        <li>Use <strong>vector layers</strong> (GeoJSON) for crisp lines.</li>
+        <li>
+          Keep <strong>stroke widths light</strong> and fills semi-transparent.
+        </li>
+        <li>Preview at the final <em>orientation</em> before exporting.</li>
+      </ul>
+
+      <h2>Minimal structure</h2>
+      <pre><code>&lt;div id="map"&gt;&lt;/div&gt;
+&lt;script src="https://unpkg.com/leaflet/dist/leaflet.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+// init
+const map = L.map('map').setView([51.5, -0.1], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19, attribution:'© OSM'
+}).addTo(map);
+
+// vector overlay
+const geojson = {"type":"FeatureCollection","features":[ /* your features */ ]};
+L.geoJSON(geojson,{
+  style: {color:'#000', weight:2, opacity:1, fillOpacity:0.4}
+}).addTo(map);
+&lt;/script&gt;</code></pre>
+
+      <h2>Print tips</h2>
+      <ul>
+        <li>
+          Use <strong>landscape</strong> for wider extents;
+          <strong>portrait</strong> for corridors.
+        </li>
+        <li>
+          Test grayscale readability if the printer isn’t color-calibrated.
+        </li>
+        <li>
+          For final output, annotate and export via
+          <a href="/">TrueGIS</a> using <em>Scaled Print</em>.
+        </li>
+      </ul>
+
+      <p>
+        Also see:
+        <a href="/blog/leaflet-vs-openlayers.html">Leaflet vs OpenLayers</a> and
+        <a href="/blog/prepare-geojson-for-truegis.html"
+          >Prepare GeoJSON for TrueGIS</a
+        >.
+      </p>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 20px; font-size: 14px; color: #ccc"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

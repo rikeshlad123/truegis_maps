@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      Client-Side Geoprocessing with Turf.js and Web Workers – TrueGIS
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Speed up browser GIS by offloading geoprocessing (buffers, clips, intersects) to Web Workers using Turf.js. Patterns, tips, and gotchas."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/client-side-geoprocessing-turf-webworkers.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Client-Side Geoprocessing with Turf.js and Web Workers – TrueGIS"
+    />
+    <meta
+      property="og:description"
+      content="Run buffers, intersects, and more in the browser without freezing the UI."
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://truegis.co.uk/blog/client-side-geoprocessing-turf-webworkers.html"
+    />
+    <meta
+      property="og:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Client-Side Geoprocessing with Turf.js and Web Workers"
+    />
+    <meta
+      name="twitter:description"
+      content="Make heavy GIS ops feel snappy by moving them off the main thread."
+    />
+    <meta
+      name="twitter:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- JSON-LD: BlogPosting + Breadcrumbs -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Client-Side Geoprocessing with Turf.js and Web Workers",
+        "description": "Speed up browser GIS by offloading geoprocessing (buffers, clips, intersects) to Web Workers using Turf.js.",
+        "author": { "@type": "Organization", "name": "TrueGIS" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TrueGIS",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://truegis.co.uk/truegis-maps-logo.png"
+          }
+        },
+        "url": "https://truegis.co.uk/blog/client-side-geoprocessing-turf-webworkers.html",
+        "mainEntityOfPage": "https://truegis.co.uk/blog/client-side-geoprocessing-turf-webworkers.html"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://truegis.co.uk/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Blog",
+            "item": "https://truegis.co.uk/blog/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Turf.js & Web Workers"
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <article class="blog-article">
+        <h1>Client-Side Geoprocessing with Turf.js and Web Workers</h1>
+        <p class="blog-meta">Reading time: ~9 min</p>
+
+        <p>
+          Client-side geoprocessing can feel sluggish if you run heavy
+          operations on the main thread. A simple pattern—<strong
+            >Turf.js</strong
+          >
+          + <strong>Web Workers</strong>—keeps the UI responsive while you
+          buffer, clip, dissolve, or intersect features.
+        </p>
+
+        <h2>When to move work off the main thread</h2>
+        <ul>
+          <li>Large GeoJSON collections (10k+ features).</li>
+          <li>CPU-intensive ops (buffer/union/intersect).</li>
+          <li>Long-running tasks that block pointer/zoom events.</li>
+        </ul>
+
+        <h2>Pattern overview</h2>
+        <ol>
+          <li>
+            Collect the minimal inputs (e.g., selected features + buffer
+            distance).
+          </li>
+          <li>
+            Post a message to a Worker with raw GeoJSON (or transferable
+            ArrayBuffers).
+          </li>
+          <li>Run Turf ops in the Worker, post back the result.</li>
+          <li>
+            Render the result layer and style it (semi-transparent fills help).
+          </li>
+        </ol>
+
+        <h2>Tips & gotchas</h2>
+        <ul>
+          <li>
+            <strong>Chunk long jobs</strong>: split datasets or chain operations
+            to send partial results.
+          </li>
+          <li>
+            <strong>Use transferable objects</strong> (when working with typed
+            arrays) to avoid copies.
+          </li>
+          <li>
+            <strong>Don’t mutate inputs</strong>: return new features to keep
+            state predictable.
+          </li>
+          <li>
+            <strong>Handle cancellations</strong>: track job IDs so you can
+            ignore stale responses.
+          </li>
+        </ul>
+
+        <h2>What about precision?</h2>
+        <p>
+          Browser floating-point is fine for most use cases. If you need exact
+          topology or robust boolean ops, consider server-side pipelines—but
+          many interactive tasks work great with Turf in a Worker.
+        </p>
+
+        <hr />
+        <p>
+          TrueGIS focuses on fast drawing, styling, and printing for everyday
+          web mapping. Open it now, sketch your features, and export a clean,
+          to-scale map: <a href="/">TrueGIS Maps</a>.
+        </p>
+
+        <p><a href="/blog/">← Back to Blog</a></p>
+      </article>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 40px 0; font-size: 14px; color: #888"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>

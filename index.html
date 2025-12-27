@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrueGIS Maps – Free Online Map Drawing Tool</title>
+    <meta
+      name="description"
+      content="Draw on maps, style features, and print with scale – all in your browser with TrueGIS Maps by TrueGIS. No install. No signup."
+    />
+    <meta
+      name="keywords"
+      content="GIS, online map drawing, web GIS, map printing, Inkmap, OpenLayers, free mapping tool"
+    />
+    <meta name="author" content="TrueGIS" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://truegis.co.uk/" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="TrueGIS Maps – Free Online Map Drawing Tool"
+    />
+    <meta
+      property="og:description"
+      content="Draw on maps, style features, and print with scale – all in your browser with TrueGIS Maps."
+    />
+    <meta property="og:url" content="https://truegis.co.uk/" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="TrueGIS Maps – Free Online Map Drawing Tool"
+    />
+    <meta
+      name="twitter:description"
+      content="Draw on maps, style features, and print with scale – all in your browser with TrueGIS Maps."
+    />
+    <meta
+      name="twitter:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Google AdSense -->
+    <meta name="google-adsense-account" content="ca-pub-9290484412483574" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9290484412483574"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Styles & Icons -->
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="truegis-favicon-transparent.png" />
+
+    <!-- OpenLayers -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css"
+    />
+
+    <!-- Accessible “visually hidden” utility -->
+    <style>
+      .visually-hidden {
+        position: absolute !important;
+        height: 1px;
+        width: 1px;
+        overflow: hidden;
+        clip: rect(1px, 1px, 1px, 1px);
+        white-space: nowrap;
+      }
+    </style>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "TrueGIS",
+        "url": "https://truegis.co.uk/",
+        "logo": "https://truegis.co.uk/truegis-maps-logo.png",
+        "sameAs": [
+          "https://www.linkedin.com/company/truegis",
+          "https://x.com/OfficialTrueGIS"
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://truegis.co.uk/",
+        "name": "TrueGIS Maps",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://truegis.co.uk/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "TrueGIS Maps – Free Online Map Drawing Tool",
+        "description": "Draw on maps, style features, and print with scale – all in your browser. No install. No signup.",
+        "url": "https://truegis.co.uk/",
+        "applicationCategory": "ProductivityApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "Draw points, lines, polygons, circles, and squares",
+          "Per-feature styling with fill, stroke, opacity, and width",
+          "Search and geolocation",
+          "Quick and scaled printing"
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <div class="social-links top-right">
+        <!-- LinkedIn -->
+        <a
+          href="https://www.linkedin.com/company/truegis"
+          target="_blank"
+          rel="noopener"
+          aria-label="LinkedIn"
+        >
+          <img src="icon-linkedin.svg" alt="LinkedIn" width="28" height="28" />
+        </a>
+        <!-- X / Twitter -->
+        <a
+          href="https://x.com/OfficialTrueGIS"
+          target="_blank"
+          rel="noopener"
+          aria-label="X (Twitter)"
+        >
+          <img src="icon-x.svg" alt="X (Twitter)" width="28" height="28" />
+        </a>
+      </div>
+      <img src="truegis-maps-logo-transparent.png" alt="TrueGIS Maps Logo" />
+      <p class="tagline">Draw, style, and print maps instantly.</p>
+    </header>
+
+    <h1 class="visually-hidden">
+      TrueGIS Maps – Free Web Mapping and Printing Tool
+    </h1>
+
+    <div id="map"></div>
+
+    <!-- Floating Controls -->
+    <div class="control-panel">
+      <!-- Draw -->
+      <div class="control-group">
+        <button id="drawToggle">Draw</button>
+        <div id="drawOptions" class="hidden">
+          <button id="drawPoint">Point</button>
+          <button id="drawLine">Line</button>
+          <button id="drawPolygon">Polygon</button>
+          <button id="drawCircle">Circle</button>
+          <button id="drawSquare">Square</button>
+          <button id="clearDrawings">Clear</button>
+        </div>
+      </div>
+
+      <!-- Style -->
+      <div class="control-group">
+        <label>Fill:</label>
+        <input type="color" id="fillColor" value="#ff0000" />
+        <label>Opacity:</label>
+        <input
+          type="range"
+          id="fillOpacity"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0.4"
+        />
+        <label>Stroke:</label>
+        <input type="color" id="strokeColor" value="#000000" />
+        <label>Stroke Opacity:</label>
+        <input
+          type="range"
+          id="strokeOpacity"
+          min="0"
+          max="1"
+          step="0.01"
+          value="1"
+        />
+        <label>Width:</label>
+        <input
+          type="range"
+          id="strokeWidth"
+          min="1"
+          max="10"
+          step="1"
+          value="2"
+        />
+      </div>
+
+      <!-- Search -->
+      <div class="control-group">
+        <input type="text" id="searchInput" placeholder="Search location..." />
+        <button id="searchBtn">Search</button>
+        <button id="locateBtn">Locate Me</button>
+      </div>
+
+      <!-- Print Settings -->
+      <div class="control-group">
+        <label for="scale">Scale:</label>
+        <select id="scale">
+          <option value="2500">1:2,500</option>
+          <option value="5000" selected>1:5,000</option>
+          <option value="10000">1:10,000</option>
+          <option value="25000">1:25,000</option>
+          <option value="50000">1:50,000</option>
+        </select>
+
+        <label for="orientation">Orientation:</label>
+        <select id="orientation">
+          <option value="landscape" selected>Landscape</option>
+          <option value="portrait">Portrait</option>
+        </select>
+
+        <label>
+          <input type="checkbox" id="showPreview" /> Show Print Area
+        </label>
+      </div>
+
+      <!-- Print -->
+      <div class="control-group center">
+        <button id="quickPrint">Quick Print</button>
+        <button id="print">Scaled Print</button>
+      </div>
+    </div>
+
+    <input
+      id="geojsonFile"
+      type="file"
+      accept=".geojson,.json"
+      style="display: none"
+    />
+    <button id="importGeoJSON">Import GeoJSON</button>
+    <button id="exportGeoJSON">Export GeoJSON</button>
+
+    <footer>
+      <p>
+        © 2025 <strong>TrueGIS</strong>. All rights reserved.
+        <a href="about.html">About</a> |
+        <a href="privacy-policy.html">Privacy Policy</a> |
+        <a href="terms.html">Terms</a> | <a href="contact.html">Contact</a> |
+        <a href="blog/">Blog</a>
+      </p>
+      <p style="margin-top: 10px; font-size: 14px; color: #ccc">
+        <span style="display: inline-flex; align-items: baseline">
+          <img
+            src="Flag_of_the_United_Kingdom.svg"
+            alt="UK"
+            width="16"
+            height="12"
+            style="vertical-align: baseline; margin-right: 4px"
+          />
+          <span>&nbsp;Founded in the UK</span>
+        </span>
+        <span style="margin: 0 6px">&middot;</span>
+        <span style="display: inline-flex; align-items: baseline">
+          <img
+            src="Flag_of_Canada.svg"
+            alt="Canada"
+            width="16"
+            height="12"
+            style="vertical-align: baseline; margin-right: 4px"
+          />
+          <span>&nbsp;Built in Nanaimo, BC</span>
+        </span>
+      </p>
+    </footer>
+
+    <script src="dist/inkmap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+    <script type="module" src="js/bootstrap.js"></script>
+
+    <script>
+      document.getElementById("drawToggle").addEventListener("click", () => {
+        document.getElementById("drawOptions").classList.toggle("hidden");
+      });
+    </script>
+  </body>
+</html>

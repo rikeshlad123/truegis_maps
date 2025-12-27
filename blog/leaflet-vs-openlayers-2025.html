@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      Leaflet vs OpenLayers in 2025: Which Should You Use? – TrueGIS
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A practical comparison of Leaflet and OpenLayers for modern web GIS: performance, vector tiles, styling, projections, and developer ergonomics."
+    />
+    <link
+      rel="canonical"
+      href="https://truegis.co.uk/blog/leaflet-vs-openlayers-2025.html"
+    />
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Leaflet vs OpenLayers in 2025: Which Should You Use? – TrueGIS"
+    />
+    <meta
+      property="og:description"
+      content="Performance, features, and use cases compared for modern mapping stacks."
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://truegis.co.uk/blog/leaflet-vs-openlayers-2025.html"
+    />
+    <meta
+      property="og:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Leaflet vs OpenLayers in 2025: Which Should You Use?"
+    />
+    <meta
+      name="twitter:description"
+      content="A practical, up-to-date comparison for web GIS projects."
+    />
+    <meta
+      name="twitter:image"
+      content="https://truegis.co.uk/truegis-maps-logo.png"
+    />
+
+    <!-- JSON-LD: BlogPosting + Breadcrumbs -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Leaflet vs OpenLayers in 2025: Which Should You Use?",
+        "description": "A practical comparison of Leaflet and OpenLayers: performance, tiles, styling, projections, and developer ergonomics.",
+        "author": { "@type": "Organization", "name": "TrueGIS" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "TrueGIS",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://truegis.co.uk/truegis-maps-logo.png"
+          }
+        },
+        "url": "https://truegis.co.uk/blog/leaflet-vs-openlayers-2025.html",
+        "mainEntityOfPage": "https://truegis.co.uk/blog/leaflet-vs-openlayers-2025.html"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://truegis.co.uk/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Blog",
+            "item": "https://truegis.co.uk/blog/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Leaflet vs OpenLayers 2025"
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="blog-header">
+      <a class="brand" href="/"
+        ><img src="/truegis-maps-logo.png" alt="TrueGIS"
+      /></a>
+      <nav class="blog-nav">
+        <a href="/">Home</a> · <a href="/blog/">Blog</a>
+      </nav>
+    </header>
+
+    <main class="blog-wrap">
+      <article class="blog-article">
+        <h1>Leaflet vs OpenLayers in 2025: Which Should You Use?</h1>
+        <p class="blog-meta">Reading time: ~8 min</p>
+
+        <p>
+          Both <strong>Leaflet</strong> and <strong>OpenLayers (OL)</strong> are
+          proven, production-grade web mapping libraries. Your choice depends on
+          data size, rendering needs, and projection/format support.
+        </p>
+
+        <h2>When Leaflet shines</h2>
+        <ul>
+          <li>Small to moderate datasets (GeoJSON, raster tiles).</li>
+          <li>Simple basemap + marker/overlay UX with minimal code.</li>
+          <li>Huge plugin ecosystem and quick onboarding.</li>
+        </ul>
+
+        <h2>When OpenLayers shines</h2>
+        <ul>
+          <li>
+            Large or complex vector layers, interactive styling, and advanced
+            controls.
+          </li>
+          <li>
+            Projection handling and mixed source types (WMTS/WMS/XYZ, vector
+            tiles, geo-services).
+          </li>
+          <li>Higher performance for dense features and dynamic styling.</li>
+        </ul>
+
+        <h2>Vector tiles, styling, and performance</h2>
+        <p>
+          Leaflet can display vector tiles via plugins, while OL offers robust
+          first-party support and powerful style expressions. For thousands of
+          features with frequent style changes, OL typically yields smoother
+          interaction.
+        </p>
+
+        <h2>Developer ergonomics</h2>
+        <ul>
+          <li>
+            <strong>Leaflet</strong>: concise API, great for beginners and
+            simple apps.
+          </li>
+          <li>
+            <strong>OpenLayers</strong>: more configuration upfront; pays off on
+            complex maps.
+          </li>
+        </ul>
+
+        <h2>So… which should I pick?</h2>
+        <ul>
+          <li>
+            Choose <strong>Leaflet</strong> for quick, lightweight mapping and
+            straightforward overlays.
+          </li>
+          <li>
+            Choose <strong>OpenLayers</strong> if you need performance, styling
+            depth, or mixed services and projections.
+          </li>
+        </ul>
+
+        <hr />
+        <p>
+          TrueGIS itself uses a modern OL stack for drawing, styling, and
+          precise printing. <a href="/">Open TrueGIS</a> to try drawing features
+          and making a scaled print in your browser.
+        </p>
+
+        <p><a href="/blog/">← Back to Blog</a></p>
+      </article>
+    </main>
+
+    <footer
+      style="text-align: center; margin: 40px 0; font-size: 14px; color: #888"
+    >
+      © 2025 TrueGIS · <a href="/privacy-policy.html">Privacy</a>
+    </footer>
+  </body>
+</html>
