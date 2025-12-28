@@ -47,18 +47,19 @@ export function initEditTools({ map, vectorSource, onChange }) {
 
       return new ol.style.Style({
         stroke: commonStroke,
-        fill: new ol.style.Fill({ color: rgba(fillColor, Math.max(0.05, fillOpacity)) }),
+        fill: new ol.style.Fill({
+          color: rgba(fillColor, Math.max(0.05, fillOpacity)),
+        }),
       });
     },
   });
-
-  select.on("select", () => onChange?.());
 
   const modify = new ol.interaction.Modify({
     features: select.getFeatures(),
     pixelTolerance: 10,
   });
 
+  // Geometry edits should snapshot/autosave
   modify.on("modifyend", () => onChange?.());
 
   map.addInteraction(select);
@@ -81,12 +82,51 @@ export function initEditTools({ map, vectorSource, onChange }) {
     return feats.length;
   }
 
+  function normalizeStyleProps(next, feature) {
+    const merged = {
+      fillColor: feature.get("fillColor") ?? "#ff0000",
+      fillOpacity: feature.get("fillOpacity") ?? 0.4,
+      strokeColor: feature.get("strokeColor") ?? "#000000",
+      strokeOpacity: feature.get("strokeOpacity") ?? 1,
+      strokeWidth: feature.get("strokeWidth") ?? 2,
+      ...next,
+    };
+
+    merged.fillOpacity =
+      typeof merged.fillOpacity === "number"
+        ? merged.fillOpacity
+        : parseFloat(merged.fillOpacity);
+
+    merged.strokeOpacity =
+      typeof merged.strokeOpacity === "number"
+        ? merged.strokeOpacity
+        : parseFloat(merged.strokeOpacity);
+
+    merged.strokeWidth =
+      typeof merged.strokeWidth === "number"
+        ? merged.strokeWidth
+        : parseInt(merged.strokeWidth, 10);
+
+    // clamp/sanity
+    merged.fillOpacity = Math.max(0, Math.min(1, merged.fillOpacity));
+    merged.strokeOpacity = Math.max(0, Math.min(1, merged.strokeOpacity));
+    merged.strokeWidth = Math.max(1, merged.strokeWidth);
+
+    return merged;
+  }
+
   function applyStyleToSelected(styleProps, applyStyle) {
     const feats = getSelectedFeatures();
     feats.forEach((f) => {
-      f.setProperties(styleProps); // persist for export/print
-      applyStyle?.(f, styleProps); // re-style in OL
+      const merged = normalizeStyleProps(styleProps, f);
+
+      // persist for export/print
+      f.setProperties(merged);
+
+      // re-style in OL (this is what makes it stick after deselect)
+      applyStyle?.(f, merged);
     });
+
     onChange?.();
     return feats.length;
   }

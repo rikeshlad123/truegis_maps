@@ -158,6 +158,20 @@ header .tagline{
 #drawOptions.hidden{ display:none; }
 #drawOptions button{ min-width:90px; }
 
+/* Optional: match other tool buttons and make "active mode" pop */
+.mode-active{
+  background: var(--accent) !important;
+  color:#000 !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(133,255,76,0.25) !important;
+}
+
+/* --- Measure tooltip (used by measureTools.js) --- */
+.truegis-measure-tooltip{
+  z-index: 5;
+  user-select: none;
+}
+
 /* GeoJSON buttons outside control-panel */
 #importGeoJSON,
 #exportGeoJSON{

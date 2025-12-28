@@ -22,6 +22,15 @@ function setDisabled(id, disabled) {
   if (el) el.disabled = !!disabled;
 }
 
+// Small debounce helper to avoid spamming history snapshots on slider drag
+function debounce(fn, wait = 150) {
+  let t = null;
+  return (...args) => {
+    if (t) clearTimeout(t);
+    t = setTimeout(() => fn(...args), wait);
+  };
+}
+
 export function bindUI({ app, store }) {
   const getStyleProps = () => ({
     fillColor: $("#fillColor")?.value || "#ff0000",
@@ -42,6 +51,18 @@ export function bindUI({ app, store }) {
     syncHistoryButtons();
   };
 
+  // Apply current style controls to selected features (persist + restyle)
+  // This is the "commit" that makes changes stick after deselect/export/refresh.
+  const commitSelectedStyle = () => {
+    const selected = app.edit?.getSelectedFeatures?.() ?? [];
+    if (!selected.length) return;
+    app.edit.applyStyleToSelected(getStyleProps(), app.draw.styleFeature);
+    afterUserChange();
+  };
+
+  // Debounced commit for slider/text input drag (prevents undo stack spam)
+  const commitSelectedStyleDebounced = debounce(commitSelectedStyle, 200);
+
   // --- MODE UI (Select vs Draw tools) ---
   const MODE_BUTTON_IDS = [
     "selectMode",
@@ -51,19 +72,38 @@ export function bindUI({ app, store }) {
     "drawCircle",
     "drawSquare",
     "drawRectangle",
+    // Measure modes (only active if buttons exist in HTML)
+    "measureLine",
+    "measureArea",
   ];
 
   const setModeActive = (id) => {
     for (const bid of MODE_BUTTON_IDS) {
       $("#" + bid)?.classList.remove("mode-active");
     }
-    $("#" + id)?.classList.add("mode-active");
+    if (id) $("#" + id)?.classList.add("mode-active");
   };
+
+  function disableMeasure() {
+    if (app.measure?.getMode?.() != null) {
+      app.measure.setMode(null);
+    }
+  }
+
+  function enableMeasure(mode, buttonId) {
+    // Prevent clashes: measuring should disable draw + clear selection
+    app.draw?.deactivate?.();
+    app.edit?.clearSelection?.();
+
+    app.measure?.setMode?.(mode);
+    setModeActive(buttonId);
+  }
 
   // --- DRAW / SELECT ---
   bindClick(
     "selectMode",
     () => {
+      disableMeasure();
       app.draw.deactivate?.();
       app.edit?.clearSelection?.();
       setModeActive("selectMode");
@@ -71,19 +111,101 @@ export function bindUI({ app, store }) {
     { required: false }
   );
 
-  bindClick("drawPoint", () => { app.draw.activate("Point", getStyleProps); setModeActive("drawPoint"); }, { required: false });
-  bindClick("drawLine", () => { app.draw.activate("LineString", getStyleProps); setModeActive("drawLine"); }, { required: false });
-  bindClick("drawPolygon", () => { app.draw.activate("Polygon", getStyleProps); setModeActive("drawPolygon"); }, { required: false });
-  bindClick("drawCircle", () => { app.draw.activate("Circle", getStyleProps); setModeActive("drawCircle"); }, { required: false });
-  bindClick("drawSquare", () => { app.draw.activate("Square", getStyleProps); setModeActive("drawSquare"); }, { required: false });
+  bindClick(
+    "drawPoint",
+    () => {
+      disableMeasure();
+      app.draw.activate("Point", getStyleProps);
+      setModeActive("drawPoint");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawLine",
+    () => {
+      disableMeasure();
+      app.draw.activate("LineString", getStyleProps);
+      setModeActive("drawLine");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawPolygon",
+    () => {
+      disableMeasure();
+      app.draw.activate("Polygon", getStyleProps);
+      setModeActive("drawPolygon");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawCircle",
+    () => {
+      disableMeasure();
+      app.draw.activate("Circle", getStyleProps);
+      setModeActive("drawCircle");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawSquare",
+    () => {
+      disableMeasure();
+      app.draw.activate("Square", getStyleProps);
+      setModeActive("drawSquare");
+    },
+    { required: false }
+  );
 
   // Optional: only if the HTML has the button
-  bindClick("drawRectangle", () => { app.draw.activate("Rectangle", getStyleProps); setModeActive("drawRectangle"); }, { required: false });
+  bindClick(
+    "drawRectangle",
+    () => {
+      disableMeasure();
+      app.draw.activate("Rectangle", getStyleProps);
+      setModeActive("drawRectangle");
+    },
+    { required: false }
+  );
+
+  // --- MEASURE (optional buttons) ---
+  // Add buttons with these IDs in HTML to enable:
+  // - #measureLine  (distance)
+  // - #measureArea  (area)
+  // - #clearMeasure (clear measurements)
+  bindClick(
+    "measureLine",
+    () => {
+      enableMeasure("line", "measureLine");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "measureArea",
+    () => {
+      enableMeasure("area", "measureArea");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "clearMeasure",
+    () => {
+      app.measure?.clear?.();
+    },
+    { required: false }
+  );
 
   bindClick(
     "clearDrawings",
     () => {
       if (!confirm("Clear all drawings?")) return;
+      disableMeasure();
       app.edit?.clearSelection?.();
       app.draw.clear();
       app.draw.deactivate?.();
@@ -103,24 +225,64 @@ export function bindUI({ app, store }) {
     { required: false }
   );
 
-  // Style controls apply to selected features
+  // Style controls apply to selected features.
+  // Important: use a debounced commit on "input" (slider drag),
+  // and a final immediate commit on "change" (release / final value).
   ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach((id) => {
-    $(id)?.addEventListener("input", () => {
-      const selected = app.edit?.getSelectedFeatures?.() ?? [];
-      if (!selected.length) return;
-      app.edit.applyStyleToSelected(getStyleProps(), app.draw.styleFeature);
-      afterUserChange();
+    const el = $(id);
+    if (!el) return;
+
+    el.addEventListener("input", () => {
+      // Live updates but don't spam history/autosave
+      commitSelectedStyleDebounced();
+    });
+
+    el.addEventListener("change", () => {
+      // Final commit as a real undo step
+      commitSelectedStyle();
     });
   });
 
   // --- UNDO / REDO ---
-  bindClick("undoBtn", () => { if (app.history?.undo?.()) { app.edit?.clearSelection?.(); afterUserChange(); } }, { required: false });
-  bindClick("redoBtn", () => { if (app.history?.redo?.()) { app.edit?.clearSelection?.(); afterUserChange(); } }, { required: false });
+  bindClick(
+    "undoBtn",
+    () => {
+      if (app.history?.undo?.()) {
+        disableMeasure();
+        app.edit?.clearSelection?.();
+        afterUserChange();
+      }
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "redoBtn",
+    () => {
+      if (app.history?.redo?.()) {
+        disableMeasure();
+        app.edit?.clearSelection?.();
+        afterUserChange();
+      }
+    },
+    { required: false }
+  );
 
   // --- PRINT PREVIEW CONTROLS ---
-  $("#scale")?.addEventListener("change", () => { store.setState({ scale: $("#scale").value }); afterUserChange(); });
-  $("#orientation")?.addEventListener("change", () => { store.setState({ orientation: $("#orientation").value }); afterUserChange(); });
-  $("#showPreview")?.addEventListener("change", () => { store.setState({ showPreview: !!$("#showPreview").checked }); afterUserChange(); });
+  $("#scale")?.addEventListener("change", () => {
+    store.setState({ scale: $("#scale").value });
+    afterUserChange();
+  });
+
+  $("#orientation")?.addEventListener("change", () => {
+    store.setState({ orientation: $("#orientation").value });
+    afterUserChange();
+  });
+
+  $("#showPreview")?.addEventListener("change", () => {
+    store.setState({ showPreview: !!$("#showPreview").checked });
+    afterUserChange();
+  });
 
   // --- SEARCH + LOCATE ---
   bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), { required: false });
@@ -181,6 +343,7 @@ export function bindUI({ app, store }) {
     });
 
     e.target.value = "";
+    disableMeasure();
     app.edit?.clearSelection?.();
     app.draw.deactivate?.();
     setModeActive("selectMode");

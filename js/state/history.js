@@ -9,6 +9,8 @@ export function createHistory({ vectorSource, applyStyle }) {
   const redoStack = [];
   let suspended = false;
 
+  // If multiple changes happen quickly (e.g. slider drag), we allow callers to debounce
+  // and then call snapshotNow() once for a single undo step.
   function withSuspend(fn) {
     suspended = true;
     try {
@@ -29,12 +31,25 @@ export function createHistory({ vectorSource, applyStyle }) {
     });
   }
 
-  function snapshot() {
-    if (suspended) return;
-    const text = getSnapshotText();
-    if (undoStack.length && undoStack[undoStack.length - 1] === text) return;
+  function _pushIfChanged(text) {
+    if (suspended) return false;
+    if (undoStack.length && undoStack[undoStack.length - 1] === text) return false;
     undoStack.push(text);
     redoStack.length = 0;
+    return true;
+  }
+
+  /**
+   * Snapshot current state (creates an undo step if changed).
+   */
+  function snapshotNow() {
+    const text = getSnapshotText();
+    return _pushIfChanged(text);
+  }
+
+  // Backwards compat: existing code calls history.snapshot()
+  function snapshot() {
+    snapshotNow();
   }
 
   function canUndo() {
@@ -68,7 +83,8 @@ export function createHistory({ vectorSource, applyStyle }) {
   }
 
   return {
-    snapshot,
+    snapshot,     // existing API
+    snapshotNow,  // new: explicit commit point
     undo,
     redo,
     canUndo,

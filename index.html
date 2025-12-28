@@ -112,7 +112,9 @@
           "Draw points, lines, polygons, circles, and squares",
           "Per-feature styling with fill, stroke, opacity, and width",
           "Search and geolocation",
-          "Quick and scaled printing"
+          "Quick and scaled printing",
+          "Measure distance and area",
+          "Undo/redo and fullscreen"
         ]
       }
     </script>
@@ -166,6 +168,37 @@
 
           <button id="clearDrawings" type="button">Clear</button>
         </div>
+      </div>
+
+      <!-- Measure -->
+      <div class="control-group">
+        <label>Measure:</label>
+        <button id="measureLine" type="button" title="Measure distance">
+          Distance
+        </button>
+        <button id="measureArea" type="button" title="Measure area">
+          Area
+        </button>
+        <button id="clearMeasure" type="button" title="Clear measurements">
+          Clear
+        </button>
+      </div>
+
+      <!-- Edit / History -->
+      <div class="control-group">
+        <button id="undoBtn" type="button" title="Undo (Ctrl/Cmd+Z)">
+          Undo
+        </button>
+        <button id="redoBtn" type="button" title="Redo (Ctrl/Cmd+Y)">
+          Redo
+        </button>
+        <button
+          id="deleteSelectedBtn"
+          type="button"
+          title="Delete selected feature(s)"
+        >
+          Delete
+        </button>
       </div>
 
       <!-- Style -->

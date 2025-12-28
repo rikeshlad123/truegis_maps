@@ -1,6 +1,7 @@
 import { initDrawTools } from "./drawTools.js";
 import { initPreviewBox } from "./previewBox.js";
 import { initEditTools } from "./editTools.js";
+import { initMeasureTools } from "./measureTools.js";
 import { createHistory } from "../state/history.js";
 import { loadAutosave, saveAutosave } from "../state/autosave.js";
 import { importGeoJSONText } from "../data/geojson.js";
@@ -35,7 +36,19 @@ export function createMapApp({ store }) {
     target: "map",
     layers: [osmLayer, esriLayer, vectorLayer],
     view,
+    rendererOptions: {
+      willReadFrequently: true,
+    },
   });
+
+  // Fullscreen control (built-in)
+  try {
+    if (ol.control?.FullScreen) {
+      map.addControl(new ol.control.FullScreen());
+    }
+  } catch (e) {
+    console.warn("[map] FullScreen control unavailable:", e);
+  }
 
   const preview = initPreviewBox({ map, vectorSource, store });
 
@@ -44,7 +57,9 @@ export function createMapApp({ store }) {
 
   function snapshotAndAutosave() {
     if (!history) return;
-    history.snapshot();
+    if (typeof history.snapshotNow === "function") history.snapshotNow();
+    else history.snapshot();
+
     const latest = history._debug.undoStack[history._debug.undoStack.length - 1];
     if (latest) saveAutosave(latest);
   }
@@ -63,6 +78,9 @@ export function createMapApp({ store }) {
 
   const edit = initEditTools({ map, vectorSource, onChange: onUserChange });
 
+  // NEW: measure tools (separate layer + interactions)
+  const measure = initMeasureTools({ map });
+
   // baseline snapshot (empty)
   history.resetBaselineFromCurrent();
 
@@ -77,6 +95,38 @@ export function createMapApp({ store }) {
     preview.update();
   }
 
+  // Keyboard shortcuts for Undo/Redo
+  window.addEventListener("keydown", (e) => {
+    const isMac = navigator.platform?.toLowerCase?.().includes("mac");
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (!mod) return;
+
+    const key = (e.key || "").toLowerCase();
+
+    // Avoid interfering with text inputs
+    const target = e.target;
+    const tag = target?.tagName?.toLowerCase?.();
+    const isTyping =
+      tag === "input" || tag === "textarea" || target?.isContentEditable;
+    if (isTyping) return;
+
+    if (key === "z" && !e.shiftKey) {
+      if (history?.undo?.()) {
+        edit?.clearSelection?.();
+        preview.update();
+        snapshotAndAutosave();
+      }
+      e.preventDefault();
+    } else if ((key === "z" && e.shiftKey) || key === "y") {
+      if (history?.redo?.()) {
+        edit?.clearSelection?.();
+        preview.update();
+        snapshotAndAutosave();
+      }
+      e.preventDefault();
+    }
+  });
+
   centerOnUserLocation({ view });
 
   return {
@@ -86,6 +136,7 @@ export function createMapApp({ store }) {
     layers: { osmLayer, esriLayer, vectorLayer },
     draw,
     edit,
+    measure, // <-- exposed
     preview,
     history,
     snapshotAndAutosave,
