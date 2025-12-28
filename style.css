@@ -104,59 +104,66 @@ header .tagline{
   background:var(--panel); color:var(--text);
   border:1px solid var(--btn-border);
   padding:10px 16px; font-size:14px; border-radius:6px;
-  cursor:pointer; transition:background .3s, color .3s;
+  cursor:pointer;
+  transition:background .2s ease, color .2s ease, border-color .2s ease, transform .05s ease, box-shadow .2s ease;
   min-width:100px;
 }
-.control-panel button:hover{ background:var(--accent); color:#000; }
-
-#drawToggle{ font-weight:700; background:#333; }
-#drawOptions.hidden{ display:none; }
-#drawOptions button{ min-width:90px; }
-
-/* GeoJSON buttons outside control-panel */
-#importGeoJSON,
-#exportGeoJSON{
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--btn-border);
-  padding: 10px 16px;
-  font-size: 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background .2s ease, color .2s ease, border-color .2s ease, transform .05s ease;
-  min-width: 180px;
-
-  display: block;
-  width: min(92vw, 420px);
-  margin: 10px auto 0;
-}
-
-#exportGeoJSON{ margin-bottom: 14px; }
-
-#importGeoJSON:hover,
-#exportGeoJSON:hover{
-  background: var(--accent);
-  color: #000;
+.control-panel button:hover{
+  background:var(--accent);
+  color:#000;
   border-color: var(--accent);
 }
-
-#importGeoJSON:active,
-#exportGeoJSON:active{
+.control-panel button:active{
   transform: translateY(1px);
 }
 
-/* Draw button – brighter, clearer hover */
-#drawToggle{
-  background: #2b2b2b;          /* slightly lighter base */
-  font-weight: 700;
+/* Buttons: disabled states */
+.control-panel button:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+.control-panel button:disabled:hover{
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--btn-border);
+  box-shadow: none;
 }
 
+/* Draw toggle – base + hover + active */
+#drawToggle{
+  font-weight:700;
+  background:#2b2b2b;             /* slightly lighter base */
+  border-color: var(--btn-border);
+}
+
+/* Ensure hover isn't "dark" (specificity override) */
 #drawToggle:hover{
-  background: var(--accent);    /* same accent */
-  color: #000;
+  background: var(--accent);
+  color:#000;
+  border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(133,255,76,0.35);
 }
 
+/* When draw options are open */
+#drawToggle.active{
+  background: var(--accent);
+  color:#000;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(133,255,76,0.25);
+}
+
+#drawOptions.hidden{ display:none; }
+#drawOptions button{ min-width:90px; }
+
+/* “Danger” button (Delete selected) */
+.control-panel button.danger{
+  border-color:#ff4d4d;
+}
+.control-panel button.danger:hover{
+  background:#ff4d4d;
+  color:#000;
+  border-color:#ff4d4d;
+}
 
 /* =======================
    Ads
