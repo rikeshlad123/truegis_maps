@@ -7,6 +7,9 @@ import { rgba } from "../utils/colors.js";
 export function initDrawTools({ map, vectorSource, onChange }) {
   let drawInteraction = null;
 
+  // Number of sides used to approximate circles as polygons (GeoJSON-safe)
+  const CIRCLE_SIDES = 64; // 32 = smaller files, 64 = smoother
+
   function styleFeature(feature, styleProps) {
     const { fillColor, fillOpacity, strokeColor, strokeOpacity, strokeWidth } =
       styleProps;
@@ -132,6 +135,14 @@ export function initDrawTools({ map, vectorSource, onChange }) {
     });
 
     drawInteraction.on("drawend", (e) => {
+      // If the user selected "Circle" (true circle geometry), convert to polygon for GeoJSON safety.
+      // Rectangle/Square already use geometryFunction -> polygon, so they don't hit this.
+      const geom = e.feature.getGeometry();
+      if (geom && geom.getType && geom.getType() === "Circle") {
+        const polygon = ol.geom.Polygon.fromCircle(geom, CIRCLE_SIDES);
+        e.feature.setGeometry(polygon);
+      }
+
       styleFeature(e.feature, getStyleProps());
       onChange?.();
     });
