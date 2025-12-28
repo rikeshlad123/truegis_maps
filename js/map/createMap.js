@@ -35,6 +35,11 @@ export function createMapApp({ store }) {
     target: "map",
     layers: [osmLayer, esriLayer, vectorLayer],
     view,
+
+    // Fix Canvas2D warning for frequent getImageData (hit detection etc.)
+    rendererOptions: {
+      willReadFrequently: true,
+    },
   });
 
   const preview = initPreviewBox({ map, vectorSource, store });
