@@ -8,10 +8,10 @@ import { exportGeoJSON, importGeoJSONFile } from "../data/geojson.js";
 function bindClick(id, handler, { required = false } = {}) {
   const el = $(id);
   if (!el) {
-    const msg = `[ui] Missing element #${id}. ${
-      required ? "This is required for the current UI." : "Skipping."
-    }`;
-    (required ? console.error : console.warn)(msg);
+    // Only shout if the element is REQUIRED. Optional buttons should not spam console.
+    if (required) {
+      console.error(`[ui] Missing element #${id}. This is required for the current UI.`);
+    }
     return null;
   }
   el.onclick = handler;
@@ -44,28 +44,41 @@ export function bindUI({ app, store }) {
   };
 
   // --- DRAW ---
+  // "Select" mode = stop drawing and allow plain selection/editing
+  bindClick("selectMode", () => app.draw.deactivate?.(), { required: false });
+
   bindClick("drawPoint", () => app.draw.activate("Point", getStyleProps), { required: false });
   bindClick("drawLine", () => app.draw.activate("LineString", getStyleProps), { required: false });
   bindClick("drawPolygon", () => app.draw.activate("Polygon", getStyleProps), { required: false });
   bindClick("drawCircle", () => app.draw.activate("Circle", getStyleProps), { required: false });
   bindClick("drawSquare", () => app.draw.activate("Square", getStyleProps), { required: false });
+
+  // Optional: only works if you add a drawRectangle button in HTML
   bindClick("drawRectangle", () => app.draw.activate("Rectangle", getStyleProps), { required: false });
 
-  bindClick("clearDrawings", () => {
-    if (!confirm("Clear all drawings?")) return;
-    app.edit?.clearSelection?.();
-    app.draw.clear();
-    afterUserChange();
-  }, { required: false });
+  bindClick(
+    "clearDrawings",
+    () => {
+      if (!confirm("Clear all drawings?")) return;
+      app.edit?.clearSelection?.();
+      app.draw.clear();
+      afterUserChange();
+    },
+    { required: false }
+  );
 
   // --- DELETE SELECTED ---
-  bindClick("deleteSelectedBtn", () => {
-    const n = app.edit?.deleteSelected?.() ?? 0;
-    if (n) afterUserChange();
-  }, { required: false });
+  bindClick(
+    "deleteSelectedBtn",
+    () => {
+      const n = app.edit?.deleteSelected?.() ?? 0;
+      if (n) afterUserChange();
+    },
+    { required: false }
+  );
 
   // Apply style to selected features when sliders change
-  ["fillColor","fillOpacity","strokeColor","strokeOpacity","strokeWidth"].forEach((id) => {
+  ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach((id) => {
     $(id)?.addEventListener("input", () => {
       const selected = app.edit?.getSelectedFeatures?.() ?? [];
       if (!selected.length) return;
@@ -75,19 +88,27 @@ export function bindUI({ app, store }) {
   });
 
   // --- UNDO / REDO ---
-  bindClick("undoBtn", () => {
-    if (app.history?.undo?.()) {
-      app.edit?.clearSelection?.();
-      afterUserChange();
-    }
-  }, { required: false });
+  bindClick(
+    "undoBtn",
+    () => {
+      if (app.history?.undo?.()) {
+        app.edit?.clearSelection?.();
+        afterUserChange();
+      }
+    },
+    { required: false }
+  );
 
-  bindClick("redoBtn", () => {
-    if (app.history?.redo?.()) {
-      app.edit?.clearSelection?.();
-      afterUserChange();
-    }
-  }, { required: false });
+  bindClick(
+    "redoBtn",
+    () => {
+      if (app.history?.redo?.()) {
+        app.edit?.clearSelection?.();
+        afterUserChange();
+      }
+    },
+    { required: false }
+  );
 
   // Keyboard shortcuts: Ctrl/Cmd+Z, Ctrl/Cmd+Y, Delete
   window.addEventListener("keydown", (e) => {
@@ -126,39 +147,47 @@ export function bindUI({ app, store }) {
   // --- SEARCH + LOCATE ---
   bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), { required: false });
 
-  bindClick("searchBtn", async () => {
-    const q = ($("#searchInput")?.value || "").trim();
-    if (!q) return alert("Enter a place to search");
+  bindClick(
+    "searchBtn",
+    async () => {
+      const q = ($("#searchInput")?.value || "").trim();
+      if (!q) return alert("Enter a place to search");
 
-    try {
-      const hit = await nominatimSearch(q);
-      if (!hit) return alert("No results found");
+      try {
+        const hit = await nominatimSearch(q);
+        if (!hit) return alert("No results found");
 
-      const lon = parseFloat(hit.lon);
-      const lat = parseFloat(hit.lat);
-      app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
-      app.view.setZoom(15);
-    } catch (e) {
-      console.error(e);
-      alert("Search failed. See console.");
-    }
-  }, { required: false });
+        const lon = parseFloat(hit.lon);
+        const lat = parseFloat(hit.lat);
+        app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
+        app.view.setZoom(15);
+      } catch (e) {
+        console.error(e);
+        alert("Search failed. See console.");
+      }
+    },
+    { required: false }
+  );
 
   // --- QUICK PRINT ---
-  bindClick("quickPrint", () => {
-    const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
-    if (!isOSM) {
-      alert("Quick Print only works with OSM due to browser security limits.");
-      return;
-    }
+  bindClick(
+    "quickPrint",
+    () => {
+      const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
+      if (!isOSM) {
+        alert("Quick Print only works with OSM due to browser security limits.");
+        return;
+      }
 
-    const canvas = app.map.getViewport().querySelector("canvas");
-    if (!canvas) return alert("Canvas not available.");
+      const canvas = app.map.getViewport().querySelector("canvas");
+      if (!canvas) return alert("Canvas not available.");
 
-    const url = canvas.toDataURL("image/png");
-    const win = window.open("", "_blank");
-    win.document.write(`<img src="${url}" alt="Map Snapshot" style="max-width:100%;" />`);
-  }, { required: false });
+      const url = canvas.toDataURL("image/png");
+      const win = window.open("", "_blank");
+      win.document.write(`<img src="${url}" alt="Map Snapshot" style="max-width:100%;" />`);
+    },
+    { required: false }
+  );
 
   // --- GEOJSON IMPORT/EXPORT ---
   bindClick("importGeoJSON", () => $("#geojsonFile")?.click(), { required: false });
@@ -178,29 +207,37 @@ export function bindUI({ app, store }) {
     afterUserChange();
   });
 
-  bindClick("exportGeoJSON", () => {
-    const text = exportGeoJSON({ vectorSource: app.vectorSource });
-    const blob = new Blob([text], { type: "application/geo+json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "truegis-drawings.geojson";
-    a.click();
-  }, { required: false });
+  bindClick(
+    "exportGeoJSON",
+    () => {
+      const text = exportGeoJSON({ vectorSource: app.vectorSource });
+      const blob = new Blob([text], { type: "application/geo+json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "truegis-drawings.geojson";
+      a.click();
+    },
+    { required: false }
+  );
 
   // --- SCALED PRINT ---
-  bindClick("print", async () => {
-    const btn = $("#print");
-    try {
-      if (btn) btn.disabled = true;
-      const spec = buildInkmapSpec({ app, store });
-      await inkmapPrint(spec);
-    } catch (e) {
-      console.error("❌ Inkmap error:", e);
-      alert("Print failed. See console.");
-    } finally {
-      if (btn) btn.disabled = false;
-    }
-  }, { required: false });
+  bindClick(
+    "print",
+    async () => {
+      const btn = $("#print");
+      try {
+        if (btn) btn.disabled = true;
+        const spec = buildInkmapSpec({ app, store });
+        await inkmapPrint(spec);
+      } catch (e) {
+        console.error("❌ Inkmap error:", e);
+        alert("Print failed. See console.");
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    },
+    { required: false }
+  );
 
   // initial
   app.preview?.update?.();
