@@ -242,6 +242,22 @@
         </label>
       </div>
 
+      <!-- Edit / Undo / Import -->
+      <div class="control-group">
+        <button id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
+        <button id="redoBtn" title="Redo (Ctrl+Y)">Redo</button>
+        <button
+          id="deleteSelectedBtn"
+          class="danger"
+          title="Delete selected (Del)"
+        >
+          Delete
+        </button>
+
+        <button id="importGeoJSON" title="Import GeoJSON">Import</button>
+        <button id="exportGeoJSON" title="Export GeoJSON">Export</button>
+      </div>
+
       <!-- Print -->
       <div class="control-group center">
         <button id="quickPrint">Quick Print</button>
@@ -255,8 +271,6 @@
       accept=".geojson,.json"
       style="display: none"
     />
-    <button id="importGeoJSON">Import GeoJSON</button>
-    <button id="exportGeoJSON">Export GeoJSON</button>
 
     <footer>
       <p>
@@ -297,7 +311,10 @@
 
     <script>
       document.getElementById("drawToggle").addEventListener("click", () => {
-        document.getElementById("drawOptions").classList.toggle("hidden");
+        const opts = document.getElementById("drawOptions");
+        const btn = document.getElementById("drawToggle");
+        opts.classList.toggle("hidden");
+        btn.classList.toggle("active");
       });
     </script>
   </body>

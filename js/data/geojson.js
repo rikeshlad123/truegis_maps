@@ -1,7 +1,12 @@
+/**
+ * GeoJSON helpers:
+ * - Export excludes preview feature (__truegis_preview)
+ * - Import restores per-feature style properties, then applies OpenLayers style
+ */
+
 export function exportGeoJSON({ vectorSource }) {
   const fmt = new ol.format.GeoJSON();
 
-  // ✅ don't export preview rectangle
   const features = vectorSource
     .getFeatures()
     .filter((f) => !f.get("__truegis_preview"));
@@ -14,8 +19,20 @@ export function exportGeoJSON({ vectorSource }) {
   return JSON.stringify(geojsonObj, null, 2);
 }
 
+/**
+ * Import from a File object (from <input type="file">).
+ * Returns imported features (excluding preview).
+ */
 export async function importGeoJSONFile({ file, vectorSource, applyStyle }) {
   const text = await file.text();
+  return importGeoJSONText({ text, vectorSource, applyStyle });
+}
+
+/**
+ * Import from raw GeoJSON text.
+ * Adds features to the vectorSource and returns them.
+ */
+export function importGeoJSONText({ text, vectorSource, applyStyle }) {
   const fmt = new ol.format.GeoJSON();
 
   const features = fmt.readFeatures(text, {
@@ -23,7 +40,6 @@ export async function importGeoJSONFile({ file, vectorSource, applyStyle }) {
     featureProjection: "EPSG:3857",
   });
 
-  // ✅ ignore preview feature if it exists in file (safety)
   const clean = features.filter((f) => !f.get("__truegis_preview"));
 
   for (const f of clean) {
@@ -46,10 +62,7 @@ export async function importGeoJSONFile({ file, vectorSource, applyStyle }) {
           : parseInt(p.strokeWidth ?? "2", 10),
     };
 
-    // ensure properties exist (for later export/print)
     f.setProperties(styleProps);
-
-    // restore OL style
     applyStyle?.(f, styleProps);
   }
 
