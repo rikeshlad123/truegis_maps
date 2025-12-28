@@ -64,13 +64,15 @@ export function initDrawTools({ map, vectorSource, onChange }) {
       const x2 = start[0] + Math.sign(dx || 1) * size;
       const y2 = start[1] + Math.sign(dy || 1) * size;
 
-      const coords = [[
-        start,
-        [x2, start[1]],
-        [x2, y2],
-        [start[0], y2],
-        start
-      ]];
+      const coords = [
+        [
+          start,
+          [x2, start[1]],
+          [x2, y2],
+          [start[0], y2],
+          start,
+        ],
+      ];
 
       if (!geometry) geometry = new ol.geom.Polygon(coords);
       else geometry.setCoordinates(coords);
@@ -79,18 +81,29 @@ export function initDrawTools({ map, vectorSource, onChange }) {
   }
 
   /**
+   * Stop drawing and return to plain selection mode.
+   */
+  function deactivate() {
+    if (drawInteraction) {
+      map.removeInteraction(drawInteraction);
+      drawInteraction = null;
+    }
+  }
+
+  /**
    * Activate a draw mode.
    * type: "Point" | "LineString" | "Polygon" | "Circle" | "Rectangle" | "Square"
    */
   function activate(type, getStyleProps) {
-    if (drawInteraction) map.removeInteraction(drawInteraction);
+    // remove any existing drawing interaction first
+    deactivate();
 
     const isBox = type === "Rectangle";
     const isSquare = type === "Square";
 
     drawInteraction = new ol.interaction.Draw({
       source: vectorSource,
-      type: (isBox || isSquare) ? "Circle" : type, // OL trick
+      type: isBox || isSquare ? "Circle" : type, // OL trick
       geometryFunction: isBox
         ? makeBoxGeometryFunction()
         : isSquare
@@ -133,5 +146,5 @@ export function initDrawTools({ map, vectorSource, onChange }) {
     onChange?.();
   }
 
-  return { activate, clear, styleFeature };
+  return { activate, deactivate, clear, styleFeature };
 }

@@ -43,18 +43,90 @@ export function bindUI({ app, store }) {
     syncHistoryButtons();
   };
 
-  // --- DRAW ---
-  // "Select" mode = stop drawing and allow plain selection/editing
-  bindClick("selectMode", () => app.draw.deactivate?.(), { required: false });
+  // --- MODE UI (Select vs Draw tools) ---
+  const MODE_BUTTON_IDS = [
+    "selectMode",
+    "drawPoint",
+    "drawLine",
+    "drawPolygon",
+    "drawCircle",
+    "drawSquare",
+    "drawRectangle",
+  ];
 
-  bindClick("drawPoint", () => app.draw.activate("Point", getStyleProps), { required: false });
-  bindClick("drawLine", () => app.draw.activate("LineString", getStyleProps), { required: false });
-  bindClick("drawPolygon", () => app.draw.activate("Polygon", getStyleProps), { required: false });
-  bindClick("drawCircle", () => app.draw.activate("Circle", getStyleProps), { required: false });
-  bindClick("drawSquare", () => app.draw.activate("Square", getStyleProps), { required: false });
+  const setModeActive = (id) => {
+    for (const bid of MODE_BUTTON_IDS) {
+      $("#" + bid)?.classList.remove("mode-active");
+    }
+    $("#" + id)?.classList.add("mode-active");
+  };
+
+  // --- DRAW / SELECT ---
+  // Select mode = stop drawing + clear selection to return to plain state
+  bindClick(
+    "selectMode",
+    () => {
+      app.draw.deactivate?.();
+      app.edit?.clearSelection?.();
+      setModeActive("selectMode");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawPoint",
+    () => {
+      app.draw.activate("Point", getStyleProps);
+      setModeActive("drawPoint");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawLine",
+    () => {
+      app.draw.activate("LineString", getStyleProps);
+      setModeActive("drawLine");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawPolygon",
+    () => {
+      app.draw.activate("Polygon", getStyleProps);
+      setModeActive("drawPolygon");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawCircle",
+    () => {
+      app.draw.activate("Circle", getStyleProps);
+      setModeActive("drawCircle");
+    },
+    { required: false }
+  );
+
+  bindClick(
+    "drawSquare",
+    () => {
+      app.draw.activate("Square", getStyleProps);
+      setModeActive("drawSquare");
+    },
+    { required: false }
+  );
 
   // Optional: only works if you add a drawRectangle button in HTML
-  bindClick("drawRectangle", () => app.draw.activate("Rectangle", getStyleProps), { required: false });
+  bindClick(
+    "drawRectangle",
+    () => {
+      app.draw.activate("Rectangle", getStyleProps);
+      setModeActive("drawRectangle");
+    },
+    { required: false }
+  );
 
   bindClick(
     "clearDrawings",
@@ -62,6 +134,9 @@ export function bindUI({ app, store }) {
       if (!confirm("Clear all drawings?")) return;
       app.edit?.clearSelection?.();
       app.draw.clear();
+      // after clearing, return to Select mode
+      app.draw.deactivate?.();
+      setModeActive("selectMode");
       afterUserChange();
     },
     { required: false }
@@ -204,6 +279,9 @@ export function bindUI({ app, store }) {
 
     e.target.value = "";
     app.edit?.clearSelection?.();
+    // after import, remain in Select mode
+    app.draw.deactivate?.();
+    setModeActive("selectMode");
     afterUserChange();
   });
 
@@ -242,4 +320,5 @@ export function bindUI({ app, store }) {
   // initial
   app.preview?.update?.();
   syncHistoryButtons();
+  setModeActive("selectMode");
 }
