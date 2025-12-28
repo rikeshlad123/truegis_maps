@@ -8,16 +8,21 @@ import { exportGeoJSON, importGeoJSONFile } from "../data/geojson.js";
 function bindClick(id, handler, { required = false } = {}) {
   const el = $(id);
   if (!el) {
-    if (required) console.error(`[ui] Missing element #${id}. This is required for the current UI.`);
+    if (required) {
+      console.error(`[ui] Missing element #${id}. This is required for the current UI.`);
+    }
     return null;
   }
   el.onclick = handler;
   return el;
 }
 
-export function bindUI({ app, store }) {
-  const onUserChange = () => app.preview?.update?.();
+function setDisabled(id, disabled) {
+  const el = $(id);
+  if (el) el.disabled = !!disabled;
+}
 
+export function bindUI({ app, store }) {
   const getStyleProps = () => ({
     fillColor: $("#fillColor")?.value || "#ff0000",
     fillOpacity: parseFloat($("#fillOpacity")?.value ?? "0.4"),
@@ -26,82 +31,144 @@ export function bindUI({ app, store }) {
     strokeWidth: parseInt($("#strokeWidth")?.value ?? "2", 10),
   });
 
-  // --- DRAW MODES ---
-  bindClick("selectMode", () => {
-    app.draw?.deactivate?.();
-    onUserChange();
+  const syncHistoryButtons = () => {
+    setDisabled("undoBtn", !app.history?.canUndo?.());
+    setDisabled("redoBtn", !app.history?.canRedo?.());
+  };
+
+  const afterUserChange = () => {
+    app.preview?.update?.();
+    app.snapshotAndAutosave?.();
+    syncHistoryButtons();
+  };
+
+  // --- MODE UI (Select vs Draw tools) ---
+  const MODE_BUTTON_IDS = [
+    "selectMode",
+    "drawPoint",
+    "drawLine",
+    "drawPolygon",
+    "drawCircle",
+    "drawSquare",
+    "drawRectangle",
+  ];
+
+  const setModeActive = (id) => {
+    for (const bid of MODE_BUTTON_IDS) {
+      $("#" + bid)?.classList.remove("mode-active");
+    }
+    $("#" + id)?.classList.add("mode-active");
+  };
+
+  // --- DRAW / SELECT ---
+  bindClick(
+    "selectMode",
+    () => {
+      app.draw.deactivate?.();
+      app.edit?.clearSelection?.();
+      setModeActive("selectMode");
+    },
+    { required: false }
+  );
+
+  bindClick("drawPoint", () => { app.draw.activate("Point", getStyleProps); setModeActive("drawPoint"); }, { required: false });
+  bindClick("drawLine", () => { app.draw.activate("LineString", getStyleProps); setModeActive("drawLine"); }, { required: false });
+  bindClick("drawPolygon", () => { app.draw.activate("Polygon", getStyleProps); setModeActive("drawPolygon"); }, { required: false });
+  bindClick("drawCircle", () => { app.draw.activate("Circle", getStyleProps); setModeActive("drawCircle"); }, { required: false });
+  bindClick("drawSquare", () => { app.draw.activate("Square", getStyleProps); setModeActive("drawSquare"); }, { required: false });
+
+  // Optional: only if the HTML has the button
+  bindClick("drawRectangle", () => { app.draw.activate("Rectangle", getStyleProps); setModeActive("drawRectangle"); }, { required: false });
+
+  bindClick(
+    "clearDrawings",
+    () => {
+      if (!confirm("Clear all drawings?")) return;
+      app.edit?.clearSelection?.();
+      app.draw.clear();
+      app.draw.deactivate?.();
+      setModeActive("selectMode");
+      afterUserChange();
+    },
+    { required: false }
+  );
+
+  // --- DELETE SELECTED ---
+  bindClick(
+    "deleteSelectedBtn",
+    () => {
+      const n = app.edit?.deleteSelected?.() ?? 0;
+      if (n) afterUserChange();
+    },
+    { required: false }
+  );
+
+  // Style controls apply to selected features
+  ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach((id) => {
+    $(id)?.addEventListener("input", () => {
+      const selected = app.edit?.getSelectedFeatures?.() ?? [];
+      if (!selected.length) return;
+      app.edit.applyStyleToSelected(getStyleProps(), app.draw.styleFeature);
+      afterUserChange();
+    });
   });
 
-  bindClick("drawPoint", () => app.draw.activate("Point", getStyleProps));
-  bindClick("drawLine", () => app.draw.activate("LineString", getStyleProps));
-  bindClick("drawPolygon", () => app.draw.activate("Polygon", getStyleProps));
-  bindClick("drawCircle", () => app.draw.activate("Circle", getStyleProps));
-  bindClick("drawSquare", () => app.draw.activate("Square", getStyleProps));
-
-  // Optional: only if you add it in HTML + draw tools support it
-  bindClick("drawRectangle", () => app.draw.activate("Rectangle", getStyleProps), { required: false });
-
-  bindClick("clearDrawings", () => {
-    if (!confirm("Clear all drawings?")) return;
-    app.draw.clear();
-    onUserChange();
-  });
+  // --- UNDO / REDO ---
+  bindClick("undoBtn", () => { if (app.history?.undo?.()) { app.edit?.clearSelection?.(); afterUserChange(); } }, { required: false });
+  bindClick("redoBtn", () => { if (app.history?.redo?.()) { app.edit?.clearSelection?.(); afterUserChange(); } }, { required: false });
 
   // --- PRINT PREVIEW CONTROLS ---
-  $("#scale")?.addEventListener("change", () => {
-    store.setState({ scale: $("#scale").value });
-    onUserChange();
-  });
-
-  $("#orientation")?.addEventListener("change", () => {
-    store.setState({ orientation: $("#orientation").value });
-    onUserChange();
-  });
-
-  $("#showPreview")?.addEventListener("change", () => {
-    store.setState({ showPreview: !!$("#showPreview").checked });
-    onUserChange();
-  });
+  $("#scale")?.addEventListener("change", () => { store.setState({ scale: $("#scale").value }); afterUserChange(); });
+  $("#orientation")?.addEventListener("change", () => { store.setState({ orientation: $("#orientation").value }); afterUserChange(); });
+  $("#showPreview")?.addEventListener("change", () => { store.setState({ showPreview: !!$("#showPreview").checked }); afterUserChange(); });
 
   // --- SEARCH + LOCATE ---
-  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }));
+  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), { required: false });
 
-  bindClick("searchBtn", async () => {
-    const q = ($("#searchInput")?.value || "").trim();
-    if (!q) return alert("Enter a place to search");
+  bindClick(
+    "searchBtn",
+    async () => {
+      const q = ($("#searchInput")?.value || "").trim();
+      if (!q) return alert("Enter a place to search");
 
-    try {
-      const hit = await nominatimSearch(q);
-      if (!hit) return alert("No results found");
+      try {
+        const hit = await nominatimSearch(q);
+        if (!hit) return alert("No results found");
 
-      const lon = parseFloat(hit.lon);
-      const lat = parseFloat(hit.lat);
-      app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
-      app.view.setZoom(15);
-    } catch (e) {
-      console.error(e);
-      alert("Search failed. See console.");
-    }
-  });
+        const lon = parseFloat(hit.lon);
+        const lat = parseFloat(hit.lat);
+        app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
+        app.view.setZoom(15);
+      } catch (e) {
+        console.error(e);
+        alert("Search failed. See console.");
+      }
+    },
+    { required: false }
+  );
 
   // --- QUICK PRINT ---
-  bindClick("quickPrint", () => {
-    const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
-    if (!isOSM) {
-      alert("Quick Print only works with OSM due to browser security limits.");
-      return;
-    }
+  bindClick(
+    "quickPrint",
+    () => {
+      const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
+      if (!isOSM) {
+        alert("Quick Print only works with OSM due to browser security limits.");
+        return;
+      }
 
-    const canvas = app.map.getViewport().querySelector("canvas");
-    if (!canvas) return alert("Canvas not available.");
+      const canvas = app.map.getViewport().querySelector("canvas");
+      if (!canvas) return alert("Canvas not available.");
 
-    const url = canvas.toDataURL("image/png");
-    const win = window.open("", "_blank");
-    win.document.write(`<img src="${url}" alt="Map Snapshot" style="max-width:100%;" />`);
-  });
+      const url = canvas.toDataURL("image/png");
+      const win = window.open("", "_blank");
+      win.document.write(`<img src="${url}" alt="Map Snapshot" style="max-width:100%;" />`);
+    },
+    { required: false }
+  );
 
   // --- GEOJSON IMPORT/EXPORT ---
-  bindClick("importGeoJSON", () => $("#geojsonFile")?.click());
+  bindClick("importGeoJSON", () => $("#geojsonFile")?.click(), { required: false });
 
   $("#geojsonFile")?.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
@@ -110,38 +177,50 @@ export function bindUI({ app, store }) {
     await importGeoJSONFile({
       file,
       vectorSource: app.vectorSource,
-      applyStyle: app.draw.styleFeature, // reapply saved props -> style
-      excludePreview: true,              // optional param (see note below)
+      applyStyle: app.draw.styleFeature,
     });
 
     e.target.value = "";
-    onUserChange();
+    app.edit?.clearSelection?.();
+    app.draw.deactivate?.();
+    setModeActive("selectMode");
+    afterUserChange();
   });
 
-  bindClick("exportGeoJSON", () => {
-    const text = exportGeoJSON({ vectorSource: app.vectorSource, excludePreview: true });
-    const blob = new Blob([text], { type: "application/geo+json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "truegis-drawings.geojson";
-    a.click();
-  });
+  bindClick(
+    "exportGeoJSON",
+    () => {
+      const text = exportGeoJSON({ vectorSource: app.vectorSource });
+      const blob = new Blob([text], { type: "application/geo+json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "truegis-drawings.geojson";
+      a.click();
+    },
+    { required: false }
+  );
 
   // --- SCALED PRINT ---
-  bindClick("print", async () => {
-    const btn = $("#print");
-    try {
-      if (btn) btn.disabled = true;
-      const spec = buildInkmapSpec({ app, store });
-      await inkmapPrint(spec);
-    } catch (e) {
-      console.error("❌ Inkmap error:", e);
-      alert("Print failed. See console.");
-    } finally {
-      if (btn) btn.disabled = false;
-    }
-  });
+  bindClick(
+    "print",
+    async () => {
+      const btn = $("#print");
+      try {
+        if (btn) btn.disabled = true;
+        const spec = buildInkmapSpec({ app, store });
+        await inkmapPrint(spec);
+      } catch (e) {
+        console.error("❌ Inkmap error:", e);
+        alert("Print failed. See console.");
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    },
+    { required: false }
+  );
 
   // initial
   app.preview?.update?.();
+  syncHistoryButtons();
+  setModeActive("selectMode");
 }

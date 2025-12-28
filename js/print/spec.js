@@ -1,12 +1,6 @@
 import { CONFIG } from "../config.js";
 import { rgba } from "../utils/colors.js";
 
-/**
- * Builds the Inkmap spec.
- * - Excludes preview rectangle via "__truegis_preview" flag
- * - Converts Circle -> Polygon (Inkmap/GeoJSON doesn't support Circle)
- * - Uses RGBA everywhere so transparency prints correctly
- */
 export function buildInkmapSpec({ app, store }) {
   const { orientation, scale } = store.getState();
   const [widthMM, heightMM] =
@@ -14,7 +8,6 @@ export function buildInkmapSpec({ app, store }) {
 
   const center = ol.proj.toLonLat(app.view.getCenter());
 
-  // Filter out preview feature(s)
   const features = app.vectorSource
     .getFeatures()
     .filter((f) => !f.get("__truegis_preview"));
@@ -27,27 +20,28 @@ export function buildInkmapSpec({ app, store }) {
       url: isOSM
         ? "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      attribution: isOSM ? "© OpenStreetMap contributors" : "© Esri & contributors",
+      attribution: isOSM
+        ? "© OpenStreetMap contributors"
+        : "© Esri & contributors",
     },
   ];
 
   for (const [i, feature] of features.entries()) {
-    // Pull style props stored on feature
     const fillColor = feature.get("fillColor") || "#ff0000";
     const fillOpacity = Number(feature.get("fillOpacity") ?? 0.4);
     const strokeColor = feature.get("strokeColor") || "#000000";
     const strokeOpacity = Number(feature.get("strokeOpacity") ?? 1);
     const strokeWidth = Number(feature.get("strokeWidth") ?? 2);
 
-    // Convert Circle -> Polygon (so GeoJSON + Inkmap can render it)
+    // Inkmap/GeoJSON does not support OpenLayers Circle geometry.
+    // Convert circles to polygons so they render in the scaled print.
     let geom = feature.getGeometry();
     if (geom?.getType?.() === "Circle") {
-      geom = ol.geom.Polygon.fromCircle(geom, 96); // smooth circle
+      geom = ol.geom.Polygon.fromCircle(geom, 96); // smoother circle
     }
 
     const tmpFeature = new ol.Feature(geom);
 
-    // Write feature to GeoJSON (3857)
     const json = JSON.parse(
       new ol.format.GeoJSON().writeFeature(tmpFeature, {
         dataProjection: "EPSG:3857",
@@ -63,17 +57,17 @@ export function buildInkmapSpec({ app, store }) {
         kind: "Mark",
         wellKnownName: "circle",
         radius: 6,
-        color: rgba(fillColor, fillOpacity),                 // ✅ transparency
-        strokeColor: rgba(strokeColor, strokeOpacity),       // ✅ transparency
+        color: rgba(fillColor, fillOpacity),
+        strokeColor: rgba(strokeColor, strokeOpacity),
         strokeWidth: Math.max(1, strokeWidth),
       });
-    } else if (geomType === "LineString") {
+    } else if (geomType === "LineString" || geomType === "MultiLineString") {
       symbolizers.push({
         kind: "Line",
         color: rgba(strokeColor, strokeOpacity),
         width: Math.max(1, strokeWidth),
       });
-    } else if (geomType === "Polygon") {
+    } else if (geomType === "Polygon" || geomType === "MultiPolygon") {
       symbolizers.push({
         kind: "Fill",
         color: rgba(fillColor, fillOpacity),
@@ -81,16 +75,12 @@ export function buildInkmapSpec({ app, store }) {
         outlineWidth: Math.max(1, strokeWidth),
       });
     } else {
-      // Skip anything unknown
       continue;
     }
 
     layers.push({
       type: "GeoJSON",
-      geojson: {
-        type: "FeatureCollection",
-        features: [json],
-      },
+      geojson: { type: "FeatureCollection", features: [json] },
       style: {
         name: `Feature ${i + 1}`,
         rules: [{ symbolizers }],

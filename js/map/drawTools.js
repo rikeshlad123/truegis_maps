@@ -8,9 +8,9 @@ export function initDrawTools({ map, vectorSource, onChange }) {
   let drawInteraction = null;
 
   function styleFeature(feature, styleProps) {
-    const { fillColor, fillOpacity, strokeColor, strokeOpacity, strokeWidth } = styleProps;
+    const { fillColor, fillOpacity, strokeColor, strokeOpacity, strokeWidth } =
+      styleProps;
 
-    // Store on feature for printing + persistence
     feature.setProperties({
       fillColor,
       fillOpacity,
@@ -62,13 +62,15 @@ export function initDrawTools({ map, vectorSource, onChange }) {
       const x2 = start[0] + Math.sign(dx || 1) * size;
       const y2 = start[1] + Math.sign(dy || 1) * size;
 
-      const coords = [[
-        start,
-        [x2, start[1]],
-        [x2, y2],
-        [start[0], y2],
-        start
-      ]];
+      const coords = [
+        [
+          start,
+          [x2, start[1]],
+          [x2, y2],
+          [start[0], y2],
+          start,
+        ],
+      ];
 
       if (!geometry) geometry = new ol.geom.Polygon(coords);
       else geometry.setCoordinates(coords);
@@ -84,7 +86,6 @@ export function initDrawTools({ map, vectorSource, onChange }) {
   }
 
   /**
-   * Activate a draw mode.
    * type: "Point" | "LineString" | "Polygon" | "Circle" | "Rectangle" | "Square"
    */
   function activate(type, getStyleProps) {
@@ -95,16 +96,21 @@ export function initDrawTools({ map, vectorSource, onChange }) {
 
     drawInteraction = new ol.interaction.Draw({
       source: vectorSource,
-      type: (isBox || isSquare) ? "Circle" : type, // OL trick
+      type: isBox || isSquare ? "Circle" : type,
       geometryFunction: isBox
         ? makeBoxGeometryFunction()
         : isSquare
         ? makeSquareGeometryFunction()
         : undefined,
-
-      // Sketch style while drawing
       style: () => {
-        const { fillColor, fillOpacity, strokeColor, strokeOpacity, strokeWidth } = getStyleProps();
+        const {
+          fillColor,
+          fillOpacity,
+          strokeColor,
+          strokeOpacity,
+          strokeWidth,
+        } = getStyleProps();
+
         return new ol.style.Style({
           stroke: new ol.style.Stroke({
             color: rgba(strokeColor, strokeOpacity),
