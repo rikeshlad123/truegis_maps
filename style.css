@@ -35,7 +35,7 @@ body{
    Site Header (generic <header>)
 ======================= */
 header{
-  position:relative;           /* for top-right social icons */
+  position:relative;
   text-align:center;
   padding:15px 10px 10px;
 }
@@ -101,20 +101,11 @@ header .tagline{
 .control-group label{ font-size:14px; }
 
 .control-panel button{
-  background:var(--panel);
-  color:var(--text);
+  background:var(--panel); color:var(--text);
   border:1px solid var(--btn-border);
-  padding:10px 16px;
-  font-size:14px;
-  border-radius:10px;
+  padding:10px 16px; font-size:14px; border-radius:10px;
   cursor:pointer;
-  transition:
-    background .2s ease,
-    color .2s ease,
-    border-color .2s ease,
-    transform .05s ease,
-    box-shadow .2s ease,
-    filter .2s ease;
+  transition:background .2s ease, color .2s ease, border-color .2s ease, transform .05s ease, box-shadow .2s ease;
   min-width:100px;
 }
 
@@ -122,6 +113,7 @@ header .tagline{
   background:var(--accent);
   color:#000;
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(133,255,76,0.18);
 }
 
 .control-panel button:active{
@@ -143,11 +135,11 @@ header .tagline{
 /* Draw toggle – base + hover + active */
 #drawToggle{
   font-weight:700;
-  background:#2b2b2b;             /* slightly lighter base */
+  background:#2b2b2b;
   border-color: var(--btn-border);
 }
 
-/* Ensure hover isn't "dark" (specificity override) */
+/* Make sure hover isn't "dark" */
 #drawToggle:hover{
   background: var(--accent);
   color:#000;
@@ -164,70 +156,39 @@ header .tagline{
 }
 
 #drawOptions.hidden{ display:none; }
+#drawOptions button{ min-width:90px; }
 
-/* Make draw options feel like a dropdown panel */
-#drawOptions{
-  background: rgba(28,29,29,0.96);
-  border: 1px solid var(--panel-border);
-  border-radius: 14px;
-  padding: 10px;
-  margin-top: 8px;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.35);
-  backdrop-filter: blur(6px);
-}
-
-/* Slightly tighter buttons inside the dropdown */
-#drawOptions button{
-  min-width: 92px;
-  padding: 9px 12px;
+/* GeoJSON buttons outside control-panel */
+#importGeoJSON,
+#exportGeoJSON{
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--btn-border);
+  padding: 10px 16px;
+  font-size: 14px;
   border-radius: 12px;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, border-color .2s ease, transform .05s ease, box-shadow .2s ease;
+  min-width: 180px;
+
+  display: block;
+  width: min(92vw, 420px);
+  margin: 10px auto 0;
 }
 
-/* Select mode button: calmer, mode-like */
-#selectMode{
-  background: #121313;                  /* darker than panel */
-  border-color: #555;
-  color: #e9e9e9;
-}
+#exportGeoJSON{ margin-bottom: 14px; }
 
-/* Select hover: soft accent tint (not full green blast) */
-#selectMode:hover{
-  background: rgba(133,255,76,0.18);
-  border-color: rgba(133,255,76,0.65);
-  color: #fff;
+#importGeoJSON:hover,
+#exportGeoJSON:hover{
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(133,255,76,0.18);
 }
 
-/* Little separator under Select (optional, subtle) */
-#selectMode{
-  position: relative;
-}
-#selectMode::after{
-  content:"";
-  position:absolute;
-  left:10px;
-  right:10px;
-  bottom:-6px;
-  height:1px;
-  background: rgba(255,255,255,0.08);
-}
-
-/* Active mode state (JS toggles .mode-active on the active tool button) */
-#drawOptions button.mode-active{
-  background: rgba(133,255,76,0.22);
-  border-color: rgba(133,255,76,0.85);
-  box-shadow: 0 0 0 2px rgba(133,255,76,0.18);
-  color: #fff;
-}
-
-/* “Danger” button (Delete selected) */
-.control-panel button.danger{
-  border-color:#ff4d4d;
-}
-.control-panel button.danger:hover{
-  background:#ff4d4d;
-  color:#000;
-  border-color:#ff4d4d;
+#importGeoJSON:active,
+#exportGeoJSON:active{
+  transform: translateY(1px);
 }
 
 /* =======================
@@ -295,7 +256,6 @@ footer strong{ color:var(--text); font-weight:700; }
 .blog-article p{ color:var(--muted); margin:8px 0 0; }
 .blog-meta{ color:#a6a8ab; font-size:.9rem; margin-top:8px; display:block; }
 
-/* Generic <main> content styles used on some pages */
 main h1{ font-size:28px; margin-bottom:10px; }
 main p{ line-height:1.6; margin:10px 0; color:var(--muted); }
 main article{

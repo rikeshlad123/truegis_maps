@@ -15,10 +15,8 @@
     <meta name="author" content="TrueGIS" />
     <meta name="robots" content="index, follow" />
 
-    <!-- Canonical -->
     <link rel="canonical" href="https://truegis.co.uk/" />
 
-    <!-- Open Graph -->
     <meta
       property="og:title"
       content="TrueGIS Maps – Free Online Map Drawing Tool"
@@ -34,7 +32,6 @@
       content="https://truegis.co.uk/truegis-maps-logo.png"
     />
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
@@ -49,7 +46,6 @@
       content="https://truegis.co.uk/truegis-maps-logo.png"
     />
 
-    <!-- Google AdSense -->
     <meta name="google-adsense-account" content="ca-pub-9290484412483574" />
     <script
       async
@@ -57,19 +53,14 @@
       crossorigin="anonymous"
     ></script>
 
-    <!-- Styles & Icons -->
     <link rel="stylesheet" href="style.css" />
-
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="truegis-favicon-transparent.png" />
 
-    <!-- OpenLayers -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css"
     />
 
-    <!-- Accessible “visually hidden” utility -->
     <style>
       .visually-hidden {
         position: absolute !important;
@@ -81,7 +72,6 @@
       }
     </style>
 
-    <!-- Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -117,11 +107,7 @@
         "url": "https://truegis.co.uk/",
         "applicationCategory": "ProductivityApplication",
         "operatingSystem": "Web Browser",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "featureList": [
           "Draw points, lines, polygons, circles, and squares",
           "Per-feature styling with fill, stroke, opacity, and width",
@@ -131,10 +117,10 @@
       }
     </script>
   </head>
+
   <body>
     <header>
       <div class="social-links top-right">
-        <!-- LinkedIn -->
         <a
           href="https://www.linkedin.com/company/truegis"
           target="_blank"
@@ -143,7 +129,6 @@
         >
           <img src="icon-linkedin.svg" alt="LinkedIn" width="28" height="28" />
         </a>
-        <!-- X / Twitter -->
         <a
           href="https://x.com/OfficialTrueGIS"
           target="_blank"
@@ -163,21 +148,23 @@
 
     <div id="map"></div>
 
-    <!-- Floating Controls -->
     <div class="control-panel">
       <!-- Draw -->
       <div class="control-group">
-        <button id="drawToggle">Draw</button>
-        <div id="drawOptions" class="hidden">
-          <!-- ✅ NEW: exit draw mode back to plain select -->
-          <button id="selectMode" title="Select mode">Select</button>
+        <button id="drawToggle" type="button">Draw</button>
 
-          <button id="drawPoint">Point</button>
-          <button id="drawLine">Line</button>
-          <button id="drawPolygon">Polygon</button>
-          <button id="drawCircle">Circle</button>
-          <button id="drawSquare">Square</button>
-          <button id="clearDrawings">Clear</button>
+        <div id="drawOptions" class="hidden">
+          <button id="selectMode" type="button">Select</button>
+
+          <button id="drawPoint" type="button">Point</button>
+          <button id="drawLine" type="button">Line</button>
+          <button id="drawPolygon" type="button">Polygon</button>
+          <button id="drawCircle" type="button">Circle</button>
+          <button id="drawSquare" type="button">Square</button>
+          <!-- Optional: only works if your draw tools support it -->
+          <!-- <button id="drawRectangle" type="button">Rectangle</button> -->
+
+          <button id="clearDrawings" type="button">Clear</button>
         </div>
       </div>
 
@@ -185,6 +172,7 @@
       <div class="control-group">
         <label>Fill:</label>
         <input type="color" id="fillColor" value="#ff0000" />
+
         <label>Opacity:</label>
         <input
           type="range"
@@ -194,8 +182,10 @@
           step="0.01"
           value="0.4"
         />
+
         <label>Stroke:</label>
         <input type="color" id="strokeColor" value="#000000" />
+
         <label>Stroke Opacity:</label>
         <input
           type="range"
@@ -205,6 +195,7 @@
           step="0.01"
           value="1"
         />
+
         <label>Width:</label>
         <input
           type="range"
@@ -219,8 +210,8 @@
       <!-- Search -->
       <div class="control-group">
         <input type="text" id="searchInput" placeholder="Search location..." />
-        <button id="searchBtn">Search</button>
-        <button id="locateBtn">Locate Me</button>
+        <button id="searchBtn" type="button">Search</button>
+        <button id="locateBtn" type="button">Locate Me</button>
       </div>
 
       <!-- Print Settings -->
@@ -240,31 +231,15 @@
           <option value="portrait">Portrait</option>
         </select>
 
-        <label>
-          <input type="checkbox" id="showPreview" /> Show Print Area
-        </label>
-      </div>
-
-      <!-- Edit / Undo / Import -->
-      <div class="control-group">
-        <button id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
-        <button id="redoBtn" title="Redo (Ctrl+Y)">Redo</button>
-        <button
-          id="deleteSelectedBtn"
-          class="danger"
-          title="Delete selected (Del)"
+        <label
+          ><input type="checkbox" id="showPreview" /> Show Print Area</label
         >
-          Delete
-        </button>
-
-        <button id="importGeoJSON" title="Import GeoJSON">Import</button>
-        <button id="exportGeoJSON" title="Export GeoJSON">Export</button>
       </div>
 
       <!-- Print -->
       <div class="control-group center">
-        <button id="quickPrint">Quick Print</button>
-        <button id="print">Scaled Print</button>
+        <button id="quickPrint" type="button">Quick Print</button>
+        <button id="print" type="button">Scaled Print</button>
       </div>
     </div>
 
@@ -274,6 +249,8 @@
       accept=".geojson,.json"
       style="display: none"
     />
+    <button id="importGeoJSON" type="button">Import GeoJSON</button>
+    <button id="exportGeoJSON" type="button">Export GeoJSON</button>
 
     <footer>
       <p>
@@ -313,11 +290,12 @@
     <script type="module" src="js/bootstrap.js"></script>
 
     <script>
-      document.getElementById("drawToggle").addEventListener("click", () => {
-        const opts = document.getElementById("drawOptions");
-        const btn = document.getElementById("drawToggle");
-        opts.classList.toggle("hidden");
-        btn.classList.toggle("active");
+      const drawToggle = document.getElementById("drawToggle");
+      const drawOptions = document.getElementById("drawOptions");
+
+      drawToggle.addEventListener("click", () => {
+        drawOptions.classList.toggle("hidden");
+        drawToggle.classList.toggle("active");
       });
     </script>
   </body>

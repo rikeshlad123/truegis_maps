@@ -47,12 +47,10 @@ export function initDrawTools({ map, vectorSource, onChange }) {
   }
 
   function makeBoxGeometryFunction() {
-    // OpenLayers built-in rectangle
     return ol.interaction.Draw.createBox();
   }
 
   function makeSquareGeometryFunction() {
-    // Enforces equal dx/dy
     return (coordinates, geometry) => {
       const start = coordinates[0];
       const end = coordinates[1];
@@ -64,15 +62,13 @@ export function initDrawTools({ map, vectorSource, onChange }) {
       const x2 = start[0] + Math.sign(dx || 1) * size;
       const y2 = start[1] + Math.sign(dy || 1) * size;
 
-      const coords = [
-        [
-          start,
-          [x2, start[1]],
-          [x2, y2],
-          [start[0], y2],
-          start,
-        ],
-      ];
+      const coords = [[
+        start,
+        [x2, start[1]],
+        [x2, y2],
+        [start[0], y2],
+        start
+      ]];
 
       if (!geometry) geometry = new ol.geom.Polygon(coords);
       else geometry.setCoordinates(coords);
@@ -80,9 +76,6 @@ export function initDrawTools({ map, vectorSource, onChange }) {
     };
   }
 
-  /**
-   * Stop drawing and return to plain selection mode.
-   */
   function deactivate() {
     if (drawInteraction) {
       map.removeInteraction(drawInteraction);
@@ -95,7 +88,6 @@ export function initDrawTools({ map, vectorSource, onChange }) {
    * type: "Point" | "LineString" | "Polygon" | "Circle" | "Rectangle" | "Square"
    */
   function activate(type, getStyleProps) {
-    // remove any existing drawing interaction first
     deactivate();
 
     const isBox = type === "Rectangle";
@@ -103,14 +95,14 @@ export function initDrawTools({ map, vectorSource, onChange }) {
 
     drawInteraction = new ol.interaction.Draw({
       source: vectorSource,
-      type: isBox || isSquare ? "Circle" : type, // OL trick
+      type: (isBox || isSquare) ? "Circle" : type, // OL trick
       geometryFunction: isBox
         ? makeBoxGeometryFunction()
         : isSquare
         ? makeSquareGeometryFunction()
         : undefined,
 
-      // Sketch style while drawing (so it doesn't show green)
+      // Sketch style while drawing
       style: () => {
         const { fillColor, fillOpacity, strokeColor, strokeOpacity, strokeWidth } = getStyleProps();
         return new ol.style.Style({

@@ -3,22 +3,23 @@ import { rgba } from "../utils/colors.js";
 
 /**
  * Builds the Inkmap spec.
- * - Uses RGBA everywhere so PDF honors transparency.
- * - Excludes preview rectangle feature by flag.
+ * - Excludes preview rectangle via "__truegis_preview" flag
+ * - Converts Circle -> Polygon (Inkmap/GeoJSON doesn't support Circle)
+ * - Uses RGBA everywhere so transparency prints correctly
  */
 export function buildInkmapSpec({ app, store }) {
   const { orientation, scale } = store.getState();
-
   const [widthMM, heightMM] =
     CONFIG.PAPER_SIZES[orientation] || CONFIG.PAPER_SIZES.landscape;
 
   const center = ol.proj.toLonLat(app.view.getCenter());
 
+  // Filter out preview feature(s)
   const features = app.vectorSource
     .getFeatures()
     .filter((f) => !f.get("__truegis_preview"));
 
-  const isOSM = app.layers.osmLayer.getVisible();
+  const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
 
   const layers = [
     {
@@ -31,61 +32,56 @@ export function buildInkmapSpec({ app, store }) {
   ];
 
   for (const [i, feature] of features.entries()) {
+    // Pull style props stored on feature
     const fillColor = feature.get("fillColor") || "#ff0000";
-    const fillOpacity =
-      typeof feature.get("fillOpacity") === "number"
-        ? feature.get("fillOpacity")
-        : parseFloat(feature.get("fillOpacity") ?? "0.4");
-
+    const fillOpacity = Number(feature.get("fillOpacity") ?? 0.4);
     const strokeColor = feature.get("strokeColor") || "#000000";
-    const strokeOpacity =
-      typeof feature.get("strokeOpacity") === "number"
-        ? feature.get("strokeOpacity")
-        : parseFloat(feature.get("strokeOpacity") ?? "1");
+    const strokeOpacity = Number(feature.get("strokeOpacity") ?? 1);
+    const strokeWidth = Number(feature.get("strokeWidth") ?? 2);
 
-    const strokeWidth =
-      typeof feature.get("strokeWidth") === "number"
-        ? feature.get("strokeWidth")
-        : parseInt(feature.get("strokeWidth") ?? "2", 10);
+    // Convert Circle -> Polygon (so GeoJSON + Inkmap can render it)
+    let geom = feature.getGeometry();
+    if (geom?.getType?.() === "Circle") {
+      geom = ol.geom.Polygon.fromCircle(geom, 96); // smooth circle
+    }
 
+    const tmpFeature = new ol.Feature(geom);
+
+    // Write feature to GeoJSON (3857)
     const json = JSON.parse(
-      new ol.format.GeoJSON().writeFeature(feature, {
+      new ol.format.GeoJSON().writeFeature(tmpFeature, {
         dataProjection: "EPSG:3857",
         featureProjection: "EPSG:3857",
       })
     );
 
     const geomType = json.geometry?.type;
-    const symbolizers = [];
+    let symbolizers = [];
 
     if (geomType === "Point") {
       symbolizers.push({
         kind: "Mark",
         wellKnownName: "circle",
         radius: 6,
-        color: rgba(fillColor, fillOpacity),               // ✅ alpha
-        strokeColor: rgba(strokeColor, strokeOpacity),     // ✅ alpha
-        strokeWidth: 1,
+        color: rgba(fillColor, fillOpacity),                 // ✅ transparency
+        strokeColor: rgba(strokeColor, strokeOpacity),       // ✅ transparency
+        strokeWidth: Math.max(1, strokeWidth),
       });
-    } else if (geomType === "LineString" || geomType === "MultiLineString") {
+    } else if (geomType === "LineString") {
       symbolizers.push({
         kind: "Line",
         color: rgba(strokeColor, strokeOpacity),
-        width: strokeWidth,
+        width: Math.max(1, strokeWidth),
       });
-    } else if (geomType === "Polygon" || geomType === "MultiPolygon") {
+    } else if (geomType === "Polygon") {
       symbolizers.push({
         kind: "Fill",
         color: rgba(fillColor, fillOpacity),
         outlineColor: rgba(strokeColor, strokeOpacity),
-        outlineWidth: strokeWidth,
-      });
-      symbolizers.push({
-        kind: "Line",
-        color: rgba(strokeColor, strokeOpacity),
-        width: strokeWidth,
+        outlineWidth: Math.max(1, strokeWidth),
       });
     } else {
+      // Skip anything unknown
       continue;
     }
 
