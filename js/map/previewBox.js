@@ -6,36 +6,12 @@ import { CONFIG } from "../config.js";
 export function initPreviewBox({ map, vectorSource, store }) {
   let previewFeature = null;
 
-  function update() {
-    const { showPreview, scale, orientation } = store.getState();
+  function ensurePreviewFeature() {
+    if (previewFeature) return previewFeature;
 
-    if (!showPreview) {
-      if (previewFeature) vectorSource.removeFeature(previewFeature);
-      previewFeature = null;
-      return;
-    }
+    previewFeature = new ol.Feature(new ol.geom.Polygon([]));
 
-    const [widthMM, heightMM] =
-      CONFIG.PAPER_SIZES[orientation] || CONFIG.PAPER_SIZES.landscape;
-
-    const center = map.getView().getCenter();
-
-    const metersPerMM = Number(scale) / 1000;
-    const width = widthMM * metersPerMM;
-    const height = heightMM * metersPerMM;
-
-    const extent = [
-      center[0] - width / 2,
-      center[1] - height / 2,
-      center[0] + width / 2,
-      center[1] + height / 2,
-    ];
-
-    if (previewFeature) vectorSource.removeFeature(previewFeature);
-
-    previewFeature = new ol.Feature(new ol.geom.Polygon.fromExtent(extent));
-
-    // ✅ Tag it
+    // ✅ Tag it so export/history can ignore it
     previewFeature.set("__truegis_preview", true);
 
     previewFeature.setStyle(
@@ -52,6 +28,42 @@ export function initPreviewBox({ map, vectorSource, store }) {
     );
 
     vectorSource.addFeature(previewFeature);
+    return previewFeature;
+  }
+
+  function removePreviewFeature() {
+    if (!previewFeature) return;
+    vectorSource.removeFeature(previewFeature);
+    previewFeature = null;
+  }
+
+  function update() {
+    const { showPreview, scale, orientation } = store.getState();
+
+    if (!showPreview) {
+      removePreviewFeature();
+      return;
+    }
+
+    const [widthMM, heightMM] =
+      CONFIG.PAPER_SIZES[orientation] || CONFIG.PAPER_SIZES.landscape;
+
+    const center = map.getView().getCenter();
+    if (!center) return;
+
+    const metersPerMM = Number(scale) / 1000;
+    const width = widthMM * metersPerMM;
+    const height = heightMM * metersPerMM;
+
+    const extent = [
+      center[0] - width / 2,
+      center[1] - height / 2,
+      center[0] + width / 2,
+      center[1] + height / 2,
+    ];
+
+    const f = ensurePreviewFeature();
+    f.setGeometry(ol.geom.Polygon.fromExtent(extent));
   }
 
   const view = map.getView();
@@ -60,6 +72,7 @@ export function initPreviewBox({ map, vectorSource, store }) {
 
   store.subscribe(update);
 
+  // initial
   update();
 
   return {

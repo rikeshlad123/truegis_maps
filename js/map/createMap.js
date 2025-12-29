@@ -97,23 +97,19 @@ export function createMapApp({ store }) {
   // Measure tools (separate layer + interactions)
   const measure = initMeasureTools({ map });
 
-  // baseline snapshot (empty)
-  history.resetBaselineFromCurrent();
-  autosaveCurrentStateOnly();
-
-  // restore autosave (if any) — localStorage first, then sessionStorage fallback
+  // ✅ IMPORTANT: load saved state BEFORE writing any autosave on startup
   const saved = loadAutosave() ?? loadAutosaveFallback?.() ?? null;
   if (saved) {
     history.withSuspend(() => {
       vectorSource.clear(true);
       importGeoJSONText({ text: saved, vectorSource, applyStyle: draw.styleFeature });
     });
-
-    // baseline becomes restored state
-    history.resetBaselineFromCurrent();
-    preview.update();
-    autosaveCurrentStateOnly();
   }
+
+  // baseline snapshot = current state (either restored or empty)
+  history.resetBaselineFromCurrent();
+  preview.update();
+  autosaveCurrentStateOnly();
 
   /**
    * Keyboard shortcuts: Ctrl/Cmd+Z undo, Ctrl/Cmd+Y (or Cmd+Shift+Z) redo.
