@@ -31,7 +31,15 @@ function debounce(fn, wait = 150) {
   };
 }
 
+function isTypingTarget(e) {
+  const target = e.target;
+  const tag = target?.tagName?.toLowerCase?.();
+  return tag === "input" || tag === "textarea" || target?.isContentEditable;
+}
+
 export function bindUI({ app, store }) {
+  const mapEl = document.getElementById("map");
+
   const getStyleProps = () => ({
     fillColor: $("#fillColor")?.value || "#ff0000",
     fillOpacity: parseFloat($("#fillOpacity")?.value ?? "0.4"),
@@ -59,7 +67,6 @@ export function bindUI({ app, store }) {
     syncHistoryButtons();
   };
 
-  // Apply current style controls to selected features
   const commitSelectedStyle = () => {
     const selected = app.edit?.getSelectedFeatures?.() ?? [];
     if (!selected.length) return;
@@ -69,7 +76,6 @@ export function bindUI({ app, store }) {
 
   const commitSelectedStyleDebounced = debounce(commitSelectedStyle, 200);
 
-  // --- MODE UI ---
   const MODE_BUTTON_IDS = [
     "selectMode",
     "drawPoint",
@@ -102,6 +108,21 @@ export function bindUI({ app, store }) {
     setModeActive(buttonId);
   }
 
+  // Track whether map was the last active context.
+  // This prevents Ctrl+Z from hijacking the whole page.
+  let mapContextActive = false;
+
+  mapEl?.addEventListener("pointerdown", () => {
+    mapContextActive = true;
+  });
+
+  // If the user clicks anywhere outside the map, release map context.
+  document.addEventListener("pointerdown", (e) => {
+    if (!mapEl) return;
+    if (mapEl.contains(e.target)) return;
+    mapContextActive = false;
+  });
+
   // --- DRAW / SELECT ---
   bindClick("selectMode", () => {
     disableMeasure();
@@ -110,52 +131,22 @@ export function bindUI({ app, store }) {
     setModeActive("selectMode");
   });
 
-  bindClick("drawPoint", () => {
+  bindClick("drawPoint", () => { disableMeasure(); app.draw.activate("Point", getStyleProps); setModeActive("drawPoint"); });
+  bindClick("drawLine", () => { disableMeasure(); app.draw.activate("LineString", getStyleProps); setModeActive("drawLine"); });
+  bindClick("drawPolygon", () => { disableMeasure(); app.draw.activate("Polygon", getStyleProps); setModeActive("drawPolygon"); });
+  bindClick("drawCircle", () => { disableMeasure(); app.draw.activate("Circle", getStyleProps); setModeActive("drawCircle"); });
+  bindClick("drawSquare", () => { disableMeasure(); app.draw.activate("Square", getStyleProps); setModeActive("drawSquare"); });
+
+  bindClick("drawRectangle", () => {
     disableMeasure();
-    app.draw.activate("Point", getStyleProps);
-    setModeActive("drawPoint");
-  });
+    app.draw.activate("Rectangle", getStyleProps);
+    setModeActive("drawRectangle");
+  }, { required: false });
 
-  bindClick("drawLine", () => {
-    disableMeasure();
-    app.draw.activate("LineString", getStyleProps);
-    setModeActive("drawLine");
-  });
-
-  bindClick("drawPolygon", () => {
-    disableMeasure();
-    app.draw.activate("Polygon", getStyleProps);
-    setModeActive("drawPolygon");
-  });
-
-  bindClick("drawCircle", () => {
-    disableMeasure();
-    app.draw.activate("Circle", getStyleProps);
-    setModeActive("drawCircle");
-  });
-
-  bindClick("drawSquare", () => {
-    disableMeasure();
-    app.draw.activate("Square", getStyleProps);
-    setModeActive("drawSquare");
-  });
-
-  bindClick(
-    "drawRectangle",
-    () => {
-      disableMeasure();
-      app.draw.activate("Rectangle", getStyleProps);
-      setModeActive("drawRectangle");
-    },
-    { required: false }
-  );
-
-  // --- MEASURE ---
   bindClick("measureLine", () => enableMeasure("line", "measureLine"), { required: false });
   bindClick("measureArea", () => enableMeasure("area", "measureArea"), { required: false });
   bindClick("clearMeasure", () => app.measure?.clear?.(), { required: false });
 
-  // --- CLEAR ---
   bindClick("clearDrawings", () => {
     if (!confirm("Clear all drawings?")) return;
     disableMeasure();
@@ -166,89 +157,68 @@ export function bindUI({ app, store }) {
     afterUserChange();
   });
 
-  // --- DELETE ---
   bindClick("deleteSelectedBtn", () => {
     const n = app.edit?.deleteSelected?.() ?? 0;
     if (n) afterUserChange();
   });
 
-  // --- STYLE CONTROLS ---
   ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach((id) => {
     const el = $(id);
     if (!el) return;
-
     el.addEventListener("input", () => commitSelectedStyleDebounced());
     el.addEventListener("change", () => commitSelectedStyle());
   });
 
-  // --- UNDO / REDO (single source of truth) ---
-  function doUndo() {
+  // --- UNDO / REDO handlers ---
+  const undoBtn = bindClick("undoBtn", () => {
     if (app.history?.undo?.()) {
       disableMeasure();
       app.edit?.clearSelection?.();
       afterUndoRedo();
-      return true;
     }
-    return false;
-  }
+  }, { required: false });
 
-  function doRedo() {
+  const redoBtn = bindClick("redoBtn", () => {
     if (app.history?.redo?.()) {
       disableMeasure();
       app.edit?.clearSelection?.();
       afterUndoRedo();
-      return true;
     }
-    return false;
-  }
+  }, { required: false });
 
-  bindClick("undoBtn", () => {
-    doUndo();
-  });
-
-  bindClick("redoBtn", () => {
-    doRedo();
-  });
-
-  // ✅ Keyboard shortcuts routed through SAME undo/redo logic as buttons
+  // ✅ Keyboard shortcuts: only when map was last active, and route through button click.
   window.addEventListener("keydown", (e) => {
     const isMac = navigator.platform?.toLowerCase?.().includes("mac");
     const mod = isMac ? e.metaKey : e.ctrlKey;
     if (!mod) return;
 
+    if (isTypingTarget(e)) return;
+
+    // Only handle if map context is active (user last interacted with map)
+    if (!mapContextActive) return;
+
     const key = (e.key || "").toLowerCase();
 
-    // Don't steal undo from text inputs
-    const target = e.target;
-    const tag = target?.tagName?.toLowerCase?.();
-    const isTyping = tag === "input" || tag === "textarea" || target?.isContentEditable;
-    if (isTyping) return;
-
     if (key === "z" && !e.shiftKey) {
-      if (doUndo()) e.preventDefault();
+      if (undoBtn && !undoBtn.disabled) {
+        undoBtn.click();
+        e.preventDefault();
+      }
     } else if ((key === "z" && e.shiftKey) || key === "y") {
-      if (doRedo()) e.preventDefault();
+      if (redoBtn && !redoBtn.disabled) {
+        redoBtn.click();
+        e.preventDefault();
+      }
     }
   });
 
   // --- PRINT PREVIEW ---
-  $("#scale")?.addEventListener("change", () => {
-    store.setState({ scale: $("#scale").value });
-    afterUserChange();
-  });
-
-  $("#orientation")?.addEventListener("change", () => {
-    store.setState({ orientation: $("#orientation").value });
-    afterUserChange();
-  });
-
-  $("#showPreview")?.addEventListener("change", () => {
-    store.setState({ showPreview: !!$("#showPreview").checked });
-    afterUserChange();
-  });
+  $("#scale")?.addEventListener("change", () => { store.setState({ scale: $("#scale").value }); afterUserChange(); });
+  $("#orientation")?.addEventListener("change", () => { store.setState({ orientation: $("#orientation").value }); afterUserChange(); });
+  $("#showPreview")?.addEventListener("change", () => { store.setState({ showPreview: !!$("#showPreview").checked }); afterUserChange(); });
 
   // --- SEARCH ---
-  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }));
+  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), { required: false });
 
   bindClick("searchBtn", async () => {
     const q = ($("#searchInput")?.value || "").trim();
@@ -265,7 +235,7 @@ export function bindUI({ app, store }) {
       console.error(e);
       alert("Search failed. See console.");
     }
-  });
+  }, { required: false });
 
   // --- QUICK PRINT ---
   bindClick("quickPrint", () => {
@@ -278,10 +248,10 @@ export function bindUI({ app, store }) {
     const url = canvas.toDataURL("image/png");
     const win = window.open("", "_blank");
     win.document.write(`<img src="${url}" style="max-width:100%;" />`);
-  });
+  }, { required: false });
 
   // --- GEOJSON ---
-  bindClick("importGeoJSON", () => $("#geojsonFile")?.click());
+  bindClick("importGeoJSON", () => $("#geojsonFile")?.click(), { required: false });
 
   $("#geojsonFile")?.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
