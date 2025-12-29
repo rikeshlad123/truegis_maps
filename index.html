@@ -55,10 +55,22 @@
 
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="truegis-favicon-transparent.png" />
+
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css"
     />
+
+    <style>
+      .visually-hidden {
+        position: absolute !important;
+        height: 1px;
+        width: 1px;
+        overflow: hidden;
+        clip: rect(1px, 1px, 1px, 1px);
+        white-space: nowrap;
+      }
+    </style>
 
     <script type="application/ld+json">
       {
@@ -73,7 +85,19 @@
         ]
       }
     </script>
-
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://truegis.co.uk/",
+        "name": "TrueGIS Maps",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://truegis.co.uk/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -88,9 +112,7 @@
           "Draw points, lines, polygons, circles, and squares",
           "Per-feature styling with fill, stroke, opacity, and width",
           "Search and geolocation",
-          "Quick and scaled printing",
-          "Measure distance and area",
-          "Undo/redo via keyboard and fullscreen"
+          "Quick and scaled printing"
         ]
       }
     </script>
@@ -103,10 +125,16 @@
           href="https://www.linkedin.com/company/truegis"
           target="_blank"
           rel="noopener"
+          aria-label="LinkedIn"
         >
           <img src="icon-linkedin.svg" alt="LinkedIn" width="28" height="28" />
         </a>
-        <a href="https://x.com/OfficialTrueGIS" target="_blank" rel="noopener">
+        <a
+          href="https://x.com/OfficialTrueGIS"
+          target="_blank"
+          rel="noopener"
+          aria-label="X (Twitter)"
+        >
           <img src="icon-x.svg" alt="X (Twitter)" width="28" height="28" />
         </a>
       </div>
@@ -114,21 +142,69 @@
       <p class="tagline">Draw, style, and print maps instantly.</p>
     </header>
 
+    <h1 class="visually-hidden">
+      TrueGIS Maps – Free Web Mapping and Printing Tool
+    </h1>
+
     <div id="map"></div>
 
     <div class="control-panel">
       <!-- Draw -->
       <div class="control-group">
         <button id="drawToggle" type="button">Draw</button>
+
         <div id="drawOptions" class="hidden">
           <button id="selectMode" type="button">Select</button>
+
           <button id="drawPoint" type="button">Point</button>
           <button id="drawLine" type="button">Line</button>
           <button id="drawPolygon" type="button">Polygon</button>
           <button id="drawCircle" type="button">Circle</button>
           <button id="drawSquare" type="button">Square</button>
+          <!-- Optional: only works if your draw tools support it -->
+          <!-- <button id="drawRectangle" type="button">Rectangle</button> -->
+
           <button id="clearDrawings" type="button">Clear</button>
         </div>
+      </div>
+
+      <!-- Style -->
+      <div class="control-group">
+        <label>Fill:</label>
+        <input type="color" id="fillColor" value="#ff0000" />
+
+        <label>Opacity:</label>
+        <input
+          type="range"
+          id="fillOpacity"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0.4"
+        />
+
+        <label>Stroke:</label>
+        <input type="color" id="strokeColor" value="#000000" />
+
+        <label>Stroke Opacity:</label>
+        <input
+          type="range"
+          id="strokeOpacity"
+          min="0"
+          max="1"
+          step="0.01"
+          value="1"
+        />
+
+        <label>Width:</label>
+        <input
+          type="range"
+          id="strokeWidth"
+          min="1"
+          max="10"
+          step="1"
+          value="2"
+        />
       </div>
 
       <!-- Measure -->
@@ -144,46 +220,33 @@
         <button id="deleteSelectedBtn" type="button">Delete</button>
       </div>
 
-      <!-- Style -->
-      <div class="control-group">
-        <label>Fill:</label>
-        <input type="color" id="fillColor" value="#ff0000" />
-        <label>Opacity:</label>
-        <input
-          type="range"
-          id="fillOpacity"
-          min="0"
-          max="1"
-          step="0.01"
-          value="0.4"
-        />
-        <label>Stroke:</label>
-        <input type="color" id="strokeColor" value="#000000" />
-        <label>Stroke Opacity:</label>
-        <input
-          type="range"
-          id="strokeOpacity"
-          min="0"
-          max="1"
-          step="0.01"
-          value="1"
-        />
-        <label>Width:</label>
-        <input
-          type="range"
-          id="strokeWidth"
-          min="1"
-          max="10"
-          step="1"
-          value="2"
-        />
-      </div>
-
       <!-- Search -->
       <div class="control-group">
         <input type="text" id="searchInput" placeholder="Search location..." />
         <button id="searchBtn" type="button">Search</button>
         <button id="locateBtn" type="button">Locate Me</button>
+      </div>
+
+      <!-- Print Settings -->
+      <div class="control-group">
+        <label for="scale">Scale:</label>
+        <select id="scale">
+          <option value="2500">1:2,500</option>
+          <option value="5000" selected>1:5,000</option>
+          <option value="10000">1:10,000</option>
+          <option value="25000">1:25,000</option>
+          <option value="50000">1:50,000</option>
+        </select>
+
+        <label for="orientation">Orientation:</label>
+        <select id="orientation">
+          <option value="landscape" selected>Landscape</option>
+          <option value="portrait">Portrait</option>
+        </select>
+
+        <label
+          ><input type="checkbox" id="showPreview" /> Show Print Area</label
+        >
       </div>
 
       <!-- Print -->
@@ -193,12 +256,46 @@
       </div>
     </div>
 
-    <input id="geojsonFile" type="file" accept=".geojson,.json" hidden />
+    <input
+      id="geojsonFile"
+      type="file"
+      accept=".geojson,.json"
+      style="display: none"
+    />
     <button id="importGeoJSON" type="button">Import GeoJSON</button>
     <button id="exportGeoJSON" type="button">Export GeoJSON</button>
 
     <footer>
-      <p>© 2025 <strong>TrueGIS</strong>. All rights reserved.</p>
+      <p>
+        © 2025 <strong>TrueGIS</strong>. All rights reserved.
+        <a href="about.html">About</a> |
+        <a href="privacy-policy.html">Privacy Policy</a> |
+        <a href="terms.html">Terms</a> | <a href="contact.html">Contact</a> |
+        <a href="blog/">Blog</a>
+      </p>
+      <p style="margin-top: 10px; font-size: 14px; color: #ccc">
+        <span style="display: inline-flex; align-items: baseline">
+          <img
+            src="Flag_of_the_United_Kingdom.svg"
+            alt="UK"
+            width="16"
+            height="12"
+            style="vertical-align: baseline; margin-right: 4px"
+          />
+          <span>&nbsp;Founded in the UK</span>
+        </span>
+        <span style="margin: 0 6px">&middot;</span>
+        <span style="display: inline-flex; align-items: baseline">
+          <img
+            src="Flag_of_Canada.svg"
+            alt="Canada"
+            width="16"
+            height="12"
+            style="vertical-align: baseline; margin-right: 4px"
+          />
+          <span>&nbsp;Built in Nanaimo, BC</span>
+        </span>
+      </p>
     </footer>
 
     <script src="dist/inkmap.js"></script>
@@ -208,6 +305,7 @@
     <script>
       const drawToggle = document.getElementById("drawToggle");
       const drawOptions = document.getElementById("drawOptions");
+
       drawToggle.addEventListener("click", () => {
         drawOptions.classList.toggle("hidden");
         drawToggle.classList.toggle("active");

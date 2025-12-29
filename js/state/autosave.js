@@ -15,15 +15,27 @@ export function loadAutosave() {
 }
 
 /**
- * Persist the latest committed history state.
- * Called AFTER snapshotting (never during undo/redo snapshot creation).
+ * Persist the latest committed state (GeoJSON text).
+ *
+ * Notes:
+ * - This should be called after real edits (draw/modify/style/delete/import/clear),
+ *   and after undo/redo restores (WITHOUT snapshotting).
+ * - We also mirror into sessionStorage as a fallback for stricter environments.
  */
 export function saveAutosave(text) {
-  if (typeof text !== "string") return;
+  if (typeof text !== "string" || !text.length) return;
+
   try {
     localStorage.setItem(KEY, text);
   } catch {
-    // storage full / private mode — silently ignore
+    // storage full / blocked — ignore
+  }
+
+  // Best-effort fallback: sessionStorage
+  try {
+    sessionStorage.setItem(KEY, text);
+  } catch {
+    // ignore
   }
 }
 
@@ -35,5 +47,23 @@ export function clearAutosave() {
     localStorage.removeItem(KEY);
   } catch {
     // ignore
+  }
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Optional helper: load from sessionStorage if localStorage was blocked.
+ * Safe to call from createMap.js if you want a fallback restore path.
+ */
+export function loadAutosaveFallback() {
+  try {
+    const text = sessionStorage.getItem(KEY);
+    return typeof text === "string" && text.length ? text : null;
+  } catch {
+    return null;
   }
 }

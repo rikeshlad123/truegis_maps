@@ -8,11 +8,19 @@ import { exportGeoJSON, importGeoJSONText } from "../data/geojson.js";
  * - snapshotNow() is the ONLY "commit" function (pushes + clears redo)
  * - undo()/redo() must NEVER call snapshotNow() (or redo will get wiped)
  * - withSuspend() prevents snapshots during programmatic restores/imports
+ *
+ * Improvements in this version:
+ * - Adds a max stack cap to avoid runaway memory usage
+ * - Exposes clearRedo() + clearAll() helpers (optional)
+ * - Makes undo/redo more defensive (won't corrupt stacks on edge cases)
  */
 export function createHistory({ vectorSource, applyStyle }) {
   const undoStack = [];
   const redoStack = [];
   let suspended = false;
+
+  // Prevent unbounded memory growth if someone draws for hours
+  const MAX_STACK = 250;
 
   function withSuspend(fn) {
     suspended = true;
@@ -39,13 +47,24 @@ export function createHistory({ vectorSource, applyStyle }) {
     return undoStack.length ? undoStack[undoStack.length - 1] : null;
   }
 
+  function _pushUndo(text) {
+    undoStack.push(text);
+
+    // cap stack size
+    if (undoStack.length > MAX_STACK) {
+      // keep the earliest baseline by trimming from the start
+      undoStack.splice(1, undoStack.length - MAX_STACK); // preserve index 0 baseline
+    }
+  }
+
   function _pushIfChanged(text) {
     if (suspended) return false;
 
     const last = getCurrent();
     if (last != null && last === text) return false;
 
-    undoStack.push(text);
+    _pushUndo(text);
+
     // IMPORTANT: any new commit invalidates redo history
     redoStack.length = 0;
     return true;
@@ -76,6 +95,8 @@ export function createHistory({ vectorSource, applyStyle }) {
     if (!canUndo()) return false;
 
     const current = undoStack.pop();
+    if (current == null) return false;
+
     redoStack.push(current);
 
     const prev = getCurrent();
@@ -89,7 +110,9 @@ export function createHistory({ vectorSource, applyStyle }) {
     if (!canRedo()) return false;
 
     const next = redoStack.pop();
-    undoStack.push(next);
+    if (next == null) return false;
+
+    _pushUndo(next);
 
     restoreFromText(next);
     return true;
@@ -101,6 +124,16 @@ export function createHistory({ vectorSource, applyStyle }) {
     undoStack.push(getSnapshotText());
   }
 
+  // Optional helpers (safe no-ops if unused)
+  function clearRedo() {
+    redoStack.length = 0;
+  }
+
+  function clearAll() {
+    undoStack.length = 0;
+    redoStack.length = 0;
+  }
+
   return {
     snapshot,      // existing API
     snapshotNow,   // explicit commit point
@@ -110,6 +143,8 @@ export function createHistory({ vectorSource, applyStyle }) {
     canUndo,
     canRedo,
     resetBaselineFromCurrent,
+    clearRedo,
+    clearAll,
     withSuspend,
     _debug: { undoStack, redoStack },
   };

@@ -3,7 +3,7 @@ import { initPreviewBox } from "./previewBox.js";
 import { initEditTools } from "./editTools.js";
 import { initMeasureTools } from "./measureTools.js";
 import { createHistory } from "../state/history.js";
-import { loadAutosave, saveAutosave } from "../state/autosave.js";
+import { loadAutosave, loadAutosaveFallback, saveAutosave } from "../state/autosave.js";
 import { exportGeoJSON, importGeoJSONText } from "../data/geojson.js";
 import { centerOnUserLocation } from "../services/location.js";
 
@@ -101,8 +101,8 @@ export function createMapApp({ store }) {
   history.resetBaselineFromCurrent();
   autosaveCurrentStateOnly();
 
-  // restore autosave (if any)
-  const saved = loadAutosave();
+  // restore autosave (if any) — localStorage first, then sessionStorage fallback
+  const saved = loadAutosave() ?? loadAutosaveFallback?.() ?? null;
   if (saved) {
     history.withSuspend(() => {
       vectorSource.clear(true);
@@ -134,7 +134,6 @@ export function createMapApp({ store }) {
 
     if (key === "z" && !e.shiftKey) {
       if (history?.undo?.()) {
-        // don’t commit a new snapshot here
         edit?.clearSelection?.();
         preview.update();
         autosaveCurrentStateOnly();
@@ -150,9 +149,19 @@ export function createMapApp({ store }) {
     }
   });
 
-  // Extra safety: persist on refresh/navigation
+  // Extra safety: persist on refresh/navigation + tab hide/freeze
   window.addEventListener("beforeunload", () => {
     autosaveCurrentStateOnly();
+  });
+
+  window.addEventListener("pagehide", () => {
+    autosaveCurrentStateOnly();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      autosaveCurrentStateOnly();
+    }
   });
 
   centerOnUserLocation({ view });

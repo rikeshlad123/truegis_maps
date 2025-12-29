@@ -83,24 +83,32 @@ export function bindUI({ app, store }) {
   }
 
   // --- DRAW / SELECT ---
-  bindClick("selectMode", () => {
-    disableMeasure();
-    app.draw.deactivate?.();
-    app.edit?.clearSelection?.();
-    setModeActive("selectMode");
-  });
+  bindClick(
+    "selectMode",
+    () => {
+      disableMeasure();
+      app.draw.deactivate?.();
+      app.edit?.clearSelection?.();
+      setModeActive("selectMode");
+    },
+    { required: false }
+  );
 
-  bindClick("drawPoint", () => { disableMeasure(); app.draw.activate("Point", getStyleProps); setModeActive("drawPoint"); });
-  bindClick("drawLine", () => { disableMeasure(); app.draw.activate("LineString", getStyleProps); setModeActive("drawLine"); });
-  bindClick("drawPolygon", () => { disableMeasure(); app.draw.activate("Polygon", getStyleProps); setModeActive("drawPolygon"); });
-  bindClick("drawCircle", () => { disableMeasure(); app.draw.activate("Circle", getStyleProps); setModeActive("drawCircle"); });
-  bindClick("drawSquare", () => { disableMeasure(); app.draw.activate("Square", getStyleProps); setModeActive("drawSquare"); });
+  bindClick("drawPoint", () => { disableMeasure(); app.draw.activate("Point", getStyleProps); setModeActive("drawPoint"); }, { required: false });
+  bindClick("drawLine", () => { disableMeasure(); app.draw.activate("LineString", getStyleProps); setModeActive("drawLine"); }, { required: false });
+  bindClick("drawPolygon", () => { disableMeasure(); app.draw.activate("Polygon", getStyleProps); setModeActive("drawPolygon"); }, { required: false });
+  bindClick("drawCircle", () => { disableMeasure(); app.draw.activate("Circle", getStyleProps); setModeActive("drawCircle"); }, { required: false });
+  bindClick("drawSquare", () => { disableMeasure(); app.draw.activate("Square", getStyleProps); setModeActive("drawSquare"); }, { required: false });
 
-  bindClick("drawRectangle", () => {
-    disableMeasure();
-    app.draw.activate("Rectangle", getStyleProps);
-    setModeActive("drawRectangle");
-  }, { required: false });
+  bindClick(
+    "drawRectangle",
+    () => {
+      disableMeasure();
+      app.draw.activate("Rectangle", getStyleProps);
+      setModeActive("drawRectangle");
+    },
+    { required: false }
+  );
 
   // --- MEASURE ---
   bindClick("measureLine", () => enableMeasure("line", "measureLine"), { required: false });
@@ -108,21 +116,29 @@ export function bindUI({ app, store }) {
   bindClick("clearMeasure", () => app.measure?.clear?.(), { required: false });
 
   // --- CLEAR DRAWINGS ---
-  bindClick("clearDrawings", () => {
-    if (!confirm("Clear all drawings?")) return;
-    disableMeasure();
-    app.edit?.clearSelection?.();
-    app.draw.clear();
-    app.draw.deactivate?.();
-    setModeActive("selectMode");
-    afterUserChange();
-  });
+  bindClick(
+    "clearDrawings",
+    () => {
+      if (!confirm("Clear all drawings?")) return;
+      disableMeasure();
+      app.edit?.clearSelection?.();
+      app.draw.clear();
+      app.draw.deactivate?.();
+      setModeActive("selectMode");
+      afterUserChange();
+    },
+    { required: false }
+  );
 
   // --- DELETE SELECTED ---
-  bindClick("deleteSelectedBtn", () => {
-    const n = app.edit?.deleteSelected?.() ?? 0;
-    if (n) afterUserChange();
-  }, { required: false });
+  bindClick(
+    "deleteSelectedBtn",
+    () => {
+      const n = app.edit?.deleteSelected?.() ?? 0;
+      if (n) afterUserChange();
+    },
+    { required: false }
+  );
 
   // --- STYLE CONTROLS (apply to selected) ---
   ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach((id) => {
@@ -140,36 +156,44 @@ export function bindUI({ app, store }) {
   // --- SEARCH + LOCATE ---
   bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), { required: false });
 
-  bindClick("searchBtn", async () => {
-    const q = ($("#searchInput")?.value || "").trim();
-    if (!q) return alert("Enter a place to search");
+  bindClick(
+    "searchBtn",
+    async () => {
+      const q = ($("#searchInput")?.value || "").trim();
+      if (!q) return alert("Enter a place to search");
 
-    try {
-      const hit = await nominatimSearch(q);
-      if (!hit) return alert("No results found");
+      try {
+        const hit = await nominatimSearch(q);
+        if (!hit) return alert("No results found");
 
-      const lon = parseFloat(hit.lon);
-      const lat = parseFloat(hit.lat);
-      app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
-      app.view.setZoom(15);
-    } catch (e) {
-      console.error(e);
-      alert("Search failed. See console.");
-    }
-  }, { required: false });
+        const lon = parseFloat(hit.lon);
+        const lat = parseFloat(hit.lat);
+        app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
+        app.view.setZoom(15);
+      } catch (e) {
+        console.error(e);
+        alert("Search failed. See console.");
+      }
+    },
+    { required: false }
+  );
 
   // --- QUICK PRINT ---
-  bindClick("quickPrint", () => {
-    const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
-    if (!isOSM) return alert("Quick Print only works with OSM.");
+  bindClick(
+    "quickPrint",
+    () => {
+      const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
+      if (!isOSM) return alert("Quick Print only works with OSM.");
 
-    const canvas = app.map.getViewport().querySelector("canvas");
-    if (!canvas) return alert("Canvas not available.");
+      const canvas = app.map.getViewport().querySelector("canvas");
+      if (!canvas) return alert("Canvas not available.");
 
-    const url = canvas.toDataURL("image/png");
-    const win = window.open("", "_blank");
-    win.document.write(`<img src="${url}" style="max-width:100%;" />`);
-  }, { required: false });
+      const url = canvas.toDataURL("image/png");
+      const win = window.open("", "_blank");
+      win.document.write(`<img src="${url}" style="max-width:100%;" />`);
+    },
+    { required: false }
+  );
 
   // --- GEOJSON IMPORT/EXPORT ---
   bindClick("importGeoJSON", () => $("#geojsonFile")?.click(), { required: false });
@@ -192,29 +216,37 @@ export function bindUI({ app, store }) {
     afterUserChange();
   });
 
-  bindClick("exportGeoJSON", () => {
-    const text = exportGeoJSON({ vectorSource: app.vectorSource });
-    const blob = new Blob([text], { type: "application/geo+json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "truegis-drawings.geojson";
-    a.click();
-  });
+  bindClick(
+    "exportGeoJSON",
+    () => {
+      const text = exportGeoJSON({ vectorSource: app.vectorSource });
+      const blob = new Blob([text], { type: "application/geo+json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "truegis-drawings.geojson";
+      a.click();
+    },
+    { required: false }
+  );
 
   // --- SCALED PRINT ---
-  bindClick("print", async () => {
-    const btn = $("#print");
-    try {
-      if (btn) btn.disabled = true;
-      const spec = buildInkmapSpec({ app, store });
-      await inkmapPrint(spec);
-    } catch (e) {
-      console.error("❌ Inkmap error:", e);
-      alert("Print failed.");
-    } finally {
-      if (btn) btn.disabled = false;
-    }
-  });
+  bindClick(
+    "print",
+    async () => {
+      const btn = $("#print");
+      try {
+        if (btn) btn.disabled = true;
+        const spec = buildInkmapSpec({ app, store });
+        await inkmapPrint(spec);
+      } catch (e) {
+        console.error("❌ Inkmap error:", e);
+        alert("Print failed.");
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    },
+    { required: false }
+  );
 
   // initial
   app.preview?.update?.();
