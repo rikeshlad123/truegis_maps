@@ -4,8 +4,13 @@
  * - Uses a dedicated vector layer + tooltip overlay
  * - Designed to be toggled on/off cleanly without affecting your main draw/edit tools
  *
+ * Fixes in this version:
+ * - Properly unbinds geometry change listeners (prevents leaks + weird repeated updates)
+ * - Always hides tooltip on deactivate/clear
+ * - Ensures measure interactions never touch your main vectorSource/history
+ * - Adds a small guard so measure clicks don’t accidentally count as “map context” for other logic
+ *
  * Usage:
- *   import { initMeasureTools } from "./measureTools.js";
  *   const measure = initMeasureTools({ map });
  *   measure.setMode("line");   // start measuring distance
  *   measure.setMode("area");   // start measuring area
@@ -15,6 +20,7 @@
 
 export function initMeasureTools({ map }) {
   const source = new ol.source.Vector();
+
   const layer = new ol.layer.Vector({
     source,
     // Keep measure visuals simple and readable; don’t depend on app style props
@@ -44,6 +50,7 @@ export function initMeasureTools({ map }) {
     white-space: nowrap;
     transform: translate(-50%, -120%);
     pointer-events: none;
+    display: none;
   `;
 
   const tooltip = new ol.Overlay({
@@ -59,40 +66,62 @@ export function initMeasureTools({ map }) {
   let mode = null; // "line" | "area" | null
   let sketch = null;
 
+  // We store the current geometry + listener key so we can unbind cleanly
+  let sketchGeom = null;
+  let geomChangeKey = null;
+
   // Use geodesic calculations for Web Mercator maps
   const sphere = ol.sphere;
 
   function formatLength(line) {
-    const length = sphere.getLength(line, { projection: map.getView().getProjection() });
+    const length = sphere.getLength(line, {
+      projection: map.getView().getProjection(),
+    });
     if (length > 1000) return `${(length / 1000).toFixed(2)} km`;
     return `${length.toFixed(1)} m`;
   }
 
   function formatArea(poly) {
-    const area = sphere.getArea(poly, { projection: map.getView().getProjection() });
+    const area = sphere.getArea(poly, {
+      projection: map.getView().getProjection(),
+    });
     if (area > 1e6) return `${(area / 1e6).toFixed(2)} km²`;
     return `${area.toFixed(1)} m²`;
   }
 
-  function updateTooltip(geom) {
+  function hideTooltip() {
+    tooltipEl.style.display = "none";
+    tooltip.setPosition(undefined);
+  }
+
+  function showTooltip(text, coord) {
+    if (!coord || !text) return;
+    tooltipEl.textContent = text;
+    tooltip.setPosition(coord);
+    tooltipEl.style.display = "block";
+  }
+
+  function updateTooltipForGeom(geom) {
     if (!geom) return;
 
-    let output = "";
-    let coord = null;
-
-    if (geom.getType() === "LineString") {
-      output = formatLength(geom);
-      coord = geom.getLastCoordinate();
-    } else if (geom.getType() === "Polygon") {
-      output = formatArea(geom);
-      coord = geom.getInteriorPoint().getCoordinates();
+    const t = geom.getType();
+    if (t === "LineString") {
+      const text = formatLength(geom);
+      const coord = geom.getLastCoordinate();
+      showTooltip(text, coord);
+    } else if (t === "Polygon") {
+      const text = formatArea(geom);
+      const coord = geom.getInteriorPoint().getCoordinates();
+      showTooltip(text, coord);
     }
+  }
 
-    if (!coord) return;
-
-    tooltipEl.textContent = output;
-    tooltip.setPosition(coord);
-    tooltipEl.style.display = output ? "block" : "none";
+  function detachGeomListener() {
+    if (geomChangeKey) {
+      ol.Observable.unByKey(geomChangeKey);
+      geomChangeKey = null;
+    }
+    sketchGeom = null;
   }
 
   function deactivate() {
@@ -100,9 +129,12 @@ export function initMeasureTools({ map }) {
       map.removeInteraction(draw);
       draw = null;
     }
+
+    detachGeomListener();
+
     sketch = null;
     mode = null;
-    tooltipEl.style.display = "none";
+    hideTooltip();
   }
 
   function activate(nextMode) {
@@ -114,21 +146,31 @@ export function initMeasureTools({ map }) {
     draw = new ol.interaction.Draw({
       source,
       type,
+      // Make sure measure doesn't interfere with other click logic elsewhere
+      // (e.g. select interactions) by stopping event propagation where OL supports it
+      // Note: OL handles pointer events internally; this is just a harmless hint.
+      stopClick: true,
     });
 
     draw.on("drawstart", (evt) => {
       sketch = evt.feature;
-      tooltipEl.style.display = "block";
 
-      // live updates while drawing
-      const geom = sketch.getGeometry();
-      geom.on("change", () => updateTooltip(geom));
+      detachGeomListener();
+
+      sketchGeom = sketch.getGeometry();
+      updateTooltipForGeom(sketchGeom);
+
+      // live updates while drawing (unbind on deactivate/drawend)
+      geomChangeKey = sketchGeom.on("change", () => updateTooltipForGeom(sketchGeom));
     });
 
     draw.on("drawend", () => {
-      // leave the last tooltip visible on the drawn feature’s last point
-      const geom = sketch?.getGeometry?.();
-      updateTooltip(geom);
+      // keep last value visible at end position
+      if (sketchGeom) updateTooltipForGeom(sketchGeom);
+
+      // stop live tracking after finish (avoids leaks)
+      detachGeomListener();
+
       sketch = null;
     });
 
@@ -158,7 +200,9 @@ export function initMeasureTools({ map }) {
 
   function clear() {
     source.clear(true);
-    tooltipEl.style.display = "none";
+    sketch = null;
+    detachGeomListener();
+    hideTooltip();
   }
 
   return {

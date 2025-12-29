@@ -7,20 +7,32 @@ import { rgba } from "../utils/colors.js";
 export function initDrawTools({ map, vectorSource, onChange }) {
   let drawInteraction = null;
 
-  // Number of sides used to approximate circles as polygons (GeoJSON-safe)
+  // Number of sides used to approximate circles as polygons (GeoJSON-safe + deterministic)
   const CIRCLE_SIDES = 64; // 32 = smaller files, 64 = smoother
 
-  function styleFeature(feature, styleProps) {
-    const { fillColor, fillOpacity, strokeColor, strokeOpacity, strokeWidth } =
-      styleProps;
+  function normalizeStyleProps(p) {
+    const fillOpacity =
+      typeof p.fillOpacity === "number" ? p.fillOpacity : parseFloat(p.fillOpacity ?? "0.4");
+    const strokeOpacity =
+      typeof p.strokeOpacity === "number" ? p.strokeOpacity : parseFloat(p.strokeOpacity ?? "1");
+    const strokeWidth =
+      typeof p.strokeWidth === "number" ? p.strokeWidth : parseInt(p.strokeWidth ?? "2", 10);
 
-    feature.setProperties({
-      fillColor,
-      fillOpacity,
-      strokeColor,
-      strokeOpacity,
-      strokeWidth,
-    });
+    return {
+      fillColor: p.fillColor || "#ff0000",
+      fillOpacity: Math.max(0, Math.min(1, isFinite(fillOpacity) ? fillOpacity : 0.4)),
+      strokeColor: p.strokeColor || "#000000",
+      strokeOpacity: Math.max(0, Math.min(1, isFinite(strokeOpacity) ? strokeOpacity : 1)),
+      strokeWidth: Math.max(1, isFinite(strokeWidth) ? strokeWidth : 2),
+    };
+  }
+
+  function styleFeature(feature, stylePropsRaw) {
+    const styleProps = normalizeStyleProps(stylePropsRaw);
+    const { fillColor, fillOpacity, strokeColor, strokeOpacity, strokeWidth } = styleProps;
+
+    // Persist for export/print
+    feature.setProperties(styleProps);
 
     const geomType = feature.getGeometry().getType();
 
@@ -81,6 +93,20 @@ export function initDrawTools({ map, vectorSource, onChange }) {
     };
   }
 
+  // Deterministic polygon ring for circles (avoids subtle version-dependent differences)
+  function circleToPolygonDeterministic(circleGeom, sides = CIRCLE_SIDES) {
+    const center = circleGeom.getCenter();
+    const radius = circleGeom.getRadius();
+
+    const ring = [];
+    for (let i = 0; i < sides; i++) {
+      const a = (i / sides) * Math.PI * 2; // 0..2pi
+      ring.push([center[0] + Math.cos(a) * radius, center[1] + Math.sin(a) * radius]);
+    }
+    ring.push(ring[0]); // close ring
+    return new ol.geom.Polygon([ring]);
+  }
+
   function deactivate() {
     if (drawInteraction) {
       map.removeInteraction(drawInteraction);
@@ -106,28 +132,22 @@ export function initDrawTools({ map, vectorSource, onChange }) {
         ? makeSquareGeometryFunction()
         : undefined,
       style: () => {
-        const {
-          fillColor,
-          fillOpacity,
-          strokeColor,
-          strokeOpacity,
-          strokeWidth,
-        } = getStyleProps();
+        const styleProps = normalizeStyleProps(getStyleProps());
 
         return new ol.style.Style({
           stroke: new ol.style.Stroke({
-            color: rgba(strokeColor, strokeOpacity),
-            width: Math.max(1, strokeWidth),
+            color: rgba(styleProps.strokeColor, styleProps.strokeOpacity),
+            width: Math.max(1, styleProps.strokeWidth),
           }),
           fill: new ol.style.Fill({
-            color: rgba(fillColor, fillOpacity),
+            color: rgba(styleProps.fillColor, styleProps.fillOpacity),
           }),
           image: new ol.style.Circle({
             radius: 6,
-            fill: new ol.style.Fill({ color: rgba(fillColor, fillOpacity) }),
+            fill: new ol.style.Fill({ color: rgba(styleProps.fillColor, styleProps.fillOpacity) }),
             stroke: new ol.style.Stroke({
-              color: rgba(strokeColor, strokeOpacity),
-              width: Math.max(1, strokeWidth),
+              color: rgba(styleProps.strokeColor, styleProps.strokeOpacity),
+              width: Math.max(1, styleProps.strokeWidth),
             }),
           }),
         });
@@ -139,8 +159,7 @@ export function initDrawTools({ map, vectorSource, onChange }) {
       // Rectangle/Square already use geometryFunction -> polygon, so they don't hit this.
       const geom = e.feature.getGeometry();
       if (geom && geom.getType && geom.getType() === "Circle") {
-        const polygon = ol.geom.Polygon.fromCircle(geom, CIRCLE_SIDES);
-        e.feature.setGeometry(polygon);
+        e.feature.setGeometry(circleToPolygonDeterministic(geom, CIRCLE_SIDES));
       }
 
       styleFeature(e.feature, getStyleProps());

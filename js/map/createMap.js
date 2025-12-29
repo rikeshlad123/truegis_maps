@@ -55,18 +55,32 @@ export function createMapApp({ store }) {
   // history created after draw (needs draw.styleFeature)
   let history = null;
 
-  // Autosave WITHOUT snapshotting (used after undo/redo so redo isn't wiped)
+  /**
+   * Autosave WITHOUT snapshotting.
+   * Use this after undo/redo so redo is not wiped.
+   * Uses history.getCurrent() when available (preferred), else falls back to _debug.
+   */
   function autosaveCurrentStateOnly() {
     if (!history) return;
-    const latest = history._debug.undoStack[history._debug.undoStack.length - 1];
+
+    const latest =
+      typeof history.getCurrent === "function"
+        ? history.getCurrent()
+        : history._debug?.undoStack?.[history._debug.undoStack.length - 1];
+
     if (latest) saveAutosave(latest);
   }
 
-  // Commit: snapshot + autosave
+  /**
+   * Commit function: snapshot + autosave.
+   * This should ONLY be called after real user edits (drawend/modifyend/style change/delete/import).
+   */
   function snapshotAndAutosave() {
     if (!history) return;
+
     if (typeof history.snapshotNow === "function") history.snapshotNow();
     else history.snapshot();
+
     autosaveCurrentStateOnly();
   }
 
@@ -89,6 +103,7 @@ export function createMapApp({ store }) {
 
   // baseline snapshot (empty)
   history.resetBaselineFromCurrent();
+  autosaveCurrentStateOnly();
 
   // restore autosave (if any)
   const saved = loadAutosave();
@@ -97,6 +112,8 @@ export function createMapApp({ store }) {
       vectorSource.clear(true);
       importGeoJSONText({ text: saved, vectorSource, applyStyle: draw.styleFeature });
     });
+
+    // After restore, baseline should be the restored state (so undo doesn't jump to empty)
     history.resetBaselineFromCurrent();
     preview.update();
     autosaveCurrentStateOnly();
@@ -114,7 +131,7 @@ export function createMapApp({ store }) {
     measure,
     preview,
     history,
-    snapshotAndAutosave,       // commit changes
-    autosaveCurrentStateOnly,  // keep autosave in sync after undo/redo
+    snapshotAndAutosave, // commit changes
+    autosaveCurrentStateOnly, // keep autosave in sync after undo/redo
   };
 }
