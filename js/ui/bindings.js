@@ -9,19 +9,12 @@ function bindClick(id, handler, { required = false } = {}) {
   const el = $(id);
   if (!el) {
     if (required) {
-      console.error(
-        `[ui] Missing element #${id}. This is required for the current UI.`
-      );
+      console.error(`[ui] Missing element #${id}. This is required for the current UI.`);
     }
     return null;
   }
   el.onclick = handler;
   return el;
-}
-
-function setDisabled(id, disabled) {
-  const el = $(id);
-  if (el) el.disabled = !!disabled;
 }
 
 // Small debounce helper to avoid spamming history snapshots on slider drag
@@ -33,37 +26,7 @@ function debounce(fn, wait = 150) {
   };
 }
 
-function isTypingTarget(e) {
-  const target = e.target;
-  const tag = target?.tagName?.toLowerCase?.();
-  return tag === "input" || tag === "textarea" || target?.isContentEditable;
-}
-
 export function bindUI({ app, store }) {
-  const mapEl = document.getElementById("map");
-
-  // HARD DISABLE browser undo/redo.
-  // Undo/redo in TrueGIS is ONLY via buttons.
-  // Capture-phase + stopImmediatePropagation prevents other listeners and browser defaults.
-  window.addEventListener(
-    "keydown",
-    (e) => {
-      const isMac = navigator.platform?.toLowerCase?.().includes("mac");
-      const mod = isMac ? e.metaKey : e.ctrlKey;
-      if (!mod) return;
-
-      const key = (e.key || "").toLowerCase();
-      const isUndo = key === "z" && !e.shiftKey;
-      const isRedo = key === "y" || (key === "z" && e.shiftKey);
-
-      if (isUndo || isRedo) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-      }
-    },
-    true // capture
-  );
-
   const getStyleProps = () => ({
     fillColor: $("#fillColor")?.value || "#ff0000",
     fillOpacity: parseFloat($("#fillOpacity")?.value ?? "0.4"),
@@ -72,23 +35,10 @@ export function bindUI({ app, store }) {
     strokeWidth: parseInt($("#strokeWidth")?.value ?? "2", 10),
   });
 
-  const syncHistoryButtons = () => {
-    setDisabled("undoBtn", !app.history?.canUndo?.());
-    setDisabled("redoBtn", !app.history?.canRedo?.());
-  };
-
   // Commit change = snapshot + autosave
   const afterUserChange = () => {
     app.preview?.update?.();
     app.snapshotAndAutosave?.();
-    syncHistoryButtons();
-  };
-
-  // After undo/redo: NO snapshot (or redo dies)
-  const afterUndoRedo = () => {
-    app.preview?.update?.();
-    app.autosaveCurrentStateOnly?.();
-    syncHistoryButtons();
   };
 
   const commitSelectedStyle = () => {
@@ -132,22 +82,6 @@ export function bindUI({ app, store }) {
     setModeActive(buttonId);
   }
 
-  // Track whether map was the last active context.
-  // This prevents Ctrl+Z from hijacking the whole page.
-  // (Kept, but keyboard undo/redo is disabled above.)
-  let mapContextActive = false;
-
-  mapEl?.addEventListener("pointerdown", () => {
-    mapContextActive = true;
-  });
-
-  // If the user clicks anywhere outside the map, release map context.
-  document.addEventListener("pointerdown", (e) => {
-    if (!mapEl) return;
-    if (mapEl.contains(e.target)) return;
-    mapContextActive = false;
-  });
-
   // --- DRAW / SELECT ---
   bindClick("selectMode", () => {
     disableMeasure();
@@ -156,50 +90,24 @@ export function bindUI({ app, store }) {
     setModeActive("selectMode");
   });
 
-  bindClick("drawPoint", () => {
-    disableMeasure();
-    app.draw.activate("Point", getStyleProps);
-    setModeActive("drawPoint");
-  });
-  bindClick("drawLine", () => {
-    disableMeasure();
-    app.draw.activate("LineString", getStyleProps);
-    setModeActive("drawLine");
-  });
-  bindClick("drawPolygon", () => {
-    disableMeasure();
-    app.draw.activate("Polygon", getStyleProps);
-    setModeActive("drawPolygon");
-  });
-  bindClick("drawCircle", () => {
-    disableMeasure();
-    app.draw.activate("Circle", getStyleProps);
-    setModeActive("drawCircle");
-  });
-  bindClick("drawSquare", () => {
-    disableMeasure();
-    app.draw.activate("Square", getStyleProps);
-    setModeActive("drawSquare");
-  });
+  bindClick("drawPoint", () => { disableMeasure(); app.draw.activate("Point", getStyleProps); setModeActive("drawPoint"); });
+  bindClick("drawLine", () => { disableMeasure(); app.draw.activate("LineString", getStyleProps); setModeActive("drawLine"); });
+  bindClick("drawPolygon", () => { disableMeasure(); app.draw.activate("Polygon", getStyleProps); setModeActive("drawPolygon"); });
+  bindClick("drawCircle", () => { disableMeasure(); app.draw.activate("Circle", getStyleProps); setModeActive("drawCircle"); });
+  bindClick("drawSquare", () => { disableMeasure(); app.draw.activate("Square", getStyleProps); setModeActive("drawSquare"); });
 
-  bindClick(
-    "drawRectangle",
-    () => {
-      disableMeasure();
-      app.draw.activate("Rectangle", getStyleProps);
-      setModeActive("drawRectangle");
-    },
-    { required: false }
-  );
+  bindClick("drawRectangle", () => {
+    disableMeasure();
+    app.draw.activate("Rectangle", getStyleProps);
+    setModeActive("drawRectangle");
+  }, { required: false });
 
-  bindClick("measureLine", () => enableMeasure("line", "measureLine"), {
-    required: false,
-  });
-  bindClick("measureArea", () => enableMeasure("area", "measureArea"), {
-    required: false,
-  });
+  // --- MEASURE ---
+  bindClick("measureLine", () => enableMeasure("line", "measureLine"), { required: false });
+  bindClick("measureArea", () => enableMeasure("area", "measureArea"), { required: false });
   bindClick("clearMeasure", () => app.measure?.clear?.(), { required: false });
 
+  // --- CLEAR DRAWINGS ---
   bindClick("clearDrawings", () => {
     if (!confirm("Clear all drawings?")) return;
     disableMeasure();
@@ -210,109 +118,61 @@ export function bindUI({ app, store }) {
     afterUserChange();
   });
 
+  // --- DELETE SELECTED ---
   bindClick("deleteSelectedBtn", () => {
     const n = app.edit?.deleteSelected?.() ?? 0;
     if (n) afterUserChange();
+  }, { required: false });
+
+  // --- STYLE CONTROLS (apply to selected) ---
+  ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", () => commitSelectedStyleDebounced());
+    el.addEventListener("change", () => commitSelectedStyle());
   });
 
-  ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach(
-    (id) => {
-      const el = $(id);
-      if (!el) return;
-      el.addEventListener("input", () => commitSelectedStyleDebounced());
-      el.addEventListener("change", () => commitSelectedStyle());
+  // --- PRINT PREVIEW CONTROLS ---
+  $("#scale")?.addEventListener("change", () => { store.setState({ scale: $("#scale").value }); afterUserChange(); });
+  $("#orientation")?.addEventListener("change", () => { store.setState({ orientation: $("#orientation").value }); afterUserChange(); });
+  $("#showPreview")?.addEventListener("change", () => { store.setState({ showPreview: !!$("#showPreview").checked }); afterUserChange(); });
+
+  // --- SEARCH + LOCATE ---
+  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), { required: false });
+
+  bindClick("searchBtn", async () => {
+    const q = ($("#searchInput")?.value || "").trim();
+    if (!q) return alert("Enter a place to search");
+
+    try {
+      const hit = await nominatimSearch(q);
+      if (!hit) return alert("No results found");
+
+      const lon = parseFloat(hit.lon);
+      const lat = parseFloat(hit.lat);
+      app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
+      app.view.setZoom(15);
+    } catch (e) {
+      console.error(e);
+      alert("Search failed. See console.");
     }
-  );
-
-  // --- UNDO / REDO handlers ---
-  const undoBtn = bindClick(
-    "undoBtn",
-    () => {
-      if (app.history?.undo?.()) {
-        disableMeasure();
-        app.edit?.clearSelection?.();
-        afterUndoRedo();
-      }
-    },
-    { required: false }
-  );
-
-  const redoBtn = bindClick(
-    "redoBtn",
-    () => {
-      if (app.history?.redo?.()) {
-        disableMeasure();
-        app.edit?.clearSelection?.();
-        afterUndoRedo();
-      }
-    },
-    { required: false }
-  );
-
-  // NOTE: Ctrl/Cmd+Z/Y shortcuts are intentionally disabled above.
-  // If you later want keyboard aliases, implement them explicitly here.
-
-  // --- PRINT PREVIEW ---
-  $("#scale")?.addEventListener("change", () => {
-    store.setState({ scale: $("#scale").value });
-    afterUserChange();
-  });
-  $("#orientation")?.addEventListener("change", () => {
-    store.setState({ orientation: $("#orientation").value });
-    afterUserChange();
-  });
-  $("#showPreview")?.addEventListener("change", () => {
-    store.setState({ showPreview: !!$("#showPreview").checked });
-    afterUserChange();
-  });
-
-  // --- SEARCH ---
-  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), {
-    required: false,
-  });
-
-  bindClick(
-    "searchBtn",
-    async () => {
-      const q = ($("#searchInput")?.value || "").trim();
-      if (!q) return alert("Enter a place to search");
-
-      try {
-        const hit = await nominatimSearch(q);
-        if (!hit) return alert("No results found");
-        const lon = parseFloat(hit.lon);
-        const lat = parseFloat(hit.lat);
-        app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
-        app.view.setZoom(15);
-      } catch (e) {
-        console.error(e);
-        alert("Search failed. See console.");
-      }
-    },
-    { required: false }
-  );
+  }, { required: false });
 
   // --- QUICK PRINT ---
-  bindClick(
-    "quickPrint",
-    () => {
-      const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
-      if (!isOSM) return alert("Quick Print only works with OSM.");
+  bindClick("quickPrint", () => {
+    const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
+    if (!isOSM) return alert("Quick Print only works with OSM.");
 
-      const canvas = app.map.getViewport().querySelector("canvas");
-      if (!canvas) return alert("Canvas not available.");
+    const canvas = app.map.getViewport().querySelector("canvas");
+    if (!canvas) return alert("Canvas not available.");
 
-      const url = canvas.toDataURL("image/png");
-      const win = window.open("", "_blank");
-      win.document.write(`<img src="${url}" style="max-width:100%;" />`);
-    },
-    { required: false }
-  );
+    const url = canvas.toDataURL("image/png");
+    const win = window.open("", "_blank");
+    win.document.write(`<img src="${url}" style="max-width:100%;" />`);
+  }, { required: false });
 
-  // --- GEOJSON ---
-  bindClick("importGeoJSON", () => $("#geojsonFile")?.click(), {
-    required: false,
-  });
+  // --- GEOJSON IMPORT/EXPORT ---
+  bindClick("importGeoJSON", () => $("#geojsonFile")?.click(), { required: false });
 
   $("#geojsonFile")?.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
@@ -341,7 +201,7 @@ export function bindUI({ app, store }) {
     a.click();
   });
 
-  // --- PRINT ---
+  // --- SCALED PRINT ---
   bindClick("print", async () => {
     const btn = $("#print");
     try {
@@ -358,6 +218,5 @@ export function bindUI({ app, store }) {
 
   // initial
   app.preview?.update?.();
-  syncHistoryButtons();
   setModeActive("selectMode");
 }

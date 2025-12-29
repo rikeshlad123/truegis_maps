@@ -56,15 +56,12 @@ export function createMapApp({ store }) {
   let history = null;
 
   /**
-   * ✅ Autosave should always reflect the REAL source-of-truth (vectorSource),
-   * not whatever history thinks is current.
-   *
-   * This makes refresh/import/export stable even if history stacks get out of sync.
+   * Autosave should reflect the actual vectorSource (source-of-truth),
+   * not a history stack pointer.
    */
   function autosaveCurrentStateOnly() {
     try {
       const text = exportGeoJSON({ vectorSource });
-      // Always save, even if empty (clearing drawings should persist)
       saveAutosave(text);
     } catch (e) {
       console.warn("[autosave] Failed:", e);
@@ -73,7 +70,7 @@ export function createMapApp({ store }) {
 
   /**
    * Commit: snapshot + autosave.
-   * Call ONLY after real user edits (drawend/modifyend/style change/delete/import/clear).
+   * Call ONLY after real edits (drawend/modifyend/style change/delete/import/clear).
    */
   function snapshotAndAutosave() {
     if (history) {
@@ -112,13 +109,48 @@ export function createMapApp({ store }) {
       importGeoJSONText({ text: saved, vectorSource, applyStyle: draw.styleFeature });
     });
 
-    // After restore, baseline should be the restored state (so undo doesn't jump to empty)
+    // baseline becomes restored state
     history.resetBaselineFromCurrent();
     preview.update();
     autosaveCurrentStateOnly();
   }
 
-  // Extra safety: make sure we persist on navigation/refresh even if something didn’t trigger onChange
+  /**
+   * Keyboard shortcuts: Ctrl/Cmd+Z undo, Ctrl/Cmd+Y (or Cmd+Shift+Z) redo.
+   * IMPORTANT: After undo/redo we DO NOT snapshot (or redo gets wiped).
+   */
+  window.addEventListener("keydown", (e) => {
+    const isMac = navigator.platform?.toLowerCase?.().includes("mac");
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (!mod) return;
+
+    const key = (e.key || "").toLowerCase();
+
+    // Avoid interfering with typing in inputs
+    const target = e.target;
+    const tag = target?.tagName?.toLowerCase?.();
+    const isTyping = tag === "input" || tag === "textarea" || target?.isContentEditable;
+    if (isTyping) return;
+
+    if (key === "z" && !e.shiftKey) {
+      if (history?.undo?.()) {
+        // don’t commit a new snapshot here
+        edit?.clearSelection?.();
+        preview.update();
+        autosaveCurrentStateOnly();
+      }
+      e.preventDefault();
+    } else if ((key === "z" && e.shiftKey) || key === "y") {
+      if (history?.redo?.()) {
+        edit?.clearSelection?.();
+        preview.update();
+        autosaveCurrentStateOnly();
+      }
+      e.preventDefault();
+    }
+  });
+
+  // Extra safety: persist on refresh/navigation
   window.addEventListener("beforeunload", () => {
     autosaveCurrentStateOnly();
   });
@@ -135,7 +167,7 @@ export function createMapApp({ store }) {
     measure,
     preview,
     history,
-    snapshotAndAutosave, // commit changes
-    autosaveCurrentStateOnly, // keep autosave in sync after undo/redo
+    snapshotAndAutosave,
+    autosaveCurrentStateOnly,
   };
 }
