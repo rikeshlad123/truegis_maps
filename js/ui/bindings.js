@@ -140,11 +140,15 @@ export function bindUI({ app, store }) {
     setModeActive("drawSquare");
   });
 
-  bindClick("drawRectangle", () => {
-    disableMeasure();
-    app.draw.activate("Rectangle", getStyleProps);
-    setModeActive("drawRectangle");
-  }, { required: false });
+  bindClick(
+    "drawRectangle",
+    () => {
+      disableMeasure();
+      app.draw.activate("Rectangle", getStyleProps);
+      setModeActive("drawRectangle");
+    },
+    { required: false }
+  );
 
   // --- MEASURE ---
   bindClick("measureLine", () => enableMeasure("line", "measureLine"), { required: false });
@@ -177,20 +181,53 @@ export function bindUI({ app, store }) {
     el.addEventListener("change", () => commitSelectedStyle());
   });
 
-  // ✅ FIXED UNDO / REDO
-  bindClick("undoBtn", () => {
+  // --- UNDO / REDO (single source of truth) ---
+  function doUndo() {
     if (app.history?.undo?.()) {
       disableMeasure();
       app.edit?.clearSelection?.();
       afterUndoRedo();
+      return true;
     }
-  });
+    return false;
+  }
 
-  bindClick("redoBtn", () => {
+  function doRedo() {
     if (app.history?.redo?.()) {
       disableMeasure();
       app.edit?.clearSelection?.();
       afterUndoRedo();
+      return true;
+    }
+    return false;
+  }
+
+  bindClick("undoBtn", () => {
+    doUndo();
+  });
+
+  bindClick("redoBtn", () => {
+    doRedo();
+  });
+
+  // ✅ Keyboard shortcuts routed through SAME undo/redo logic as buttons
+  window.addEventListener("keydown", (e) => {
+    const isMac = navigator.platform?.toLowerCase?.().includes("mac");
+    const mod = isMac ? e.metaKey : e.ctrlKey;
+    if (!mod) return;
+
+    const key = (e.key || "").toLowerCase();
+
+    // Don't steal undo from text inputs
+    const target = e.target;
+    const tag = target?.tagName?.toLowerCase?.();
+    const isTyping = tag === "input" || tag === "textarea" || target?.isContentEditable;
+    if (isTyping) return;
+
+    if (key === "z" && !e.shiftKey) {
+      if (doUndo()) e.preventDefault();
+    } else if ((key === "z" && e.shiftKey) || key === "y") {
+      if (doRedo()) e.preventDefault();
     }
   });
 

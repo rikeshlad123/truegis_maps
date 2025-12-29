@@ -102,38 +102,6 @@ export function createMapApp({ store }) {
     autosaveCurrentStateOnly();
   }
 
-  // Keyboard shortcuts for Undo/Redo
-  // IMPORTANT: Do NOT snapshot after undo/redo, or you'll clear the redo stack.
-  window.addEventListener("keydown", (e) => {
-    const isMac = navigator.platform?.toLowerCase?.().includes("mac");
-    const mod = isMac ? e.metaKey : e.ctrlKey;
-    if (!mod) return;
-
-    const key = (e.key || "").toLowerCase();
-
-    // Avoid interfering with text inputs
-    const target = e.target;
-    const tag = target?.tagName?.toLowerCase?.();
-    const isTyping = tag === "input" || tag === "textarea" || target?.isContentEditable;
-    if (isTyping) return;
-
-    if (key === "z" && !e.shiftKey) {
-      if (history?.undo?.()) {
-        edit?.clearSelection?.();
-        preview.update();
-        autosaveCurrentStateOnly();
-      }
-      e.preventDefault();
-    } else if ((key === "z" && e.shiftKey) || key === "y") {
-      if (history?.redo?.()) {
-        edit?.clearSelection?.();
-        preview.update();
-        autosaveCurrentStateOnly();
-      }
-      e.preventDefault();
-    }
-  });
-
   centerOnUserLocation({ view });
 
   return {
