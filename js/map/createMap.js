@@ -4,7 +4,7 @@ import { initEditTools } from "./editTools.js";
 import { initMeasureTools } from "./measureTools.js";
 import { createHistory } from "../state/history.js";
 import { loadAutosave, saveAutosave } from "../state/autosave.js";
-import { importGeoJSONText } from "../data/geojson.js";
+import { exportGeoJSON, importGeoJSONText } from "../data/geojson.js";
 import { centerOnUserLocation } from "../services/location.js";
 
 /**
@@ -56,31 +56,30 @@ export function createMapApp({ store }) {
   let history = null;
 
   /**
-   * Autosave WITHOUT snapshotting.
-   * Use this after undo/redo so redo is not wiped.
-   * Uses history.getCurrent() when available (preferred), else falls back to _debug.
+   * ✅ Autosave should always reflect the REAL source-of-truth (vectorSource),
+   * not whatever history thinks is current.
+   *
+   * This makes refresh/import/export stable even if history stacks get out of sync.
    */
   function autosaveCurrentStateOnly() {
-    if (!history) return;
-
-    const latest =
-      typeof history.getCurrent === "function"
-        ? history.getCurrent()
-        : history._debug?.undoStack?.[history._debug.undoStack.length - 1];
-
-    if (latest) saveAutosave(latest);
+    try {
+      const text = exportGeoJSON({ vectorSource });
+      // Always save, even if empty (clearing drawings should persist)
+      saveAutosave(text);
+    } catch (e) {
+      console.warn("[autosave] Failed:", e);
+    }
   }
 
   /**
-   * Commit function: snapshot + autosave.
-   * This should ONLY be called after real user edits (drawend/modifyend/style change/delete/import).
+   * Commit: snapshot + autosave.
+   * Call ONLY after real user edits (drawend/modifyend/style change/delete/import/clear).
    */
   function snapshotAndAutosave() {
-    if (!history) return;
-
-    if (typeof history.snapshotNow === "function") history.snapshotNow();
-    else history.snapshot();
-
+    if (history) {
+      if (typeof history.snapshotNow === "function") history.snapshotNow();
+      else history.snapshot();
+    }
     autosaveCurrentStateOnly();
   }
 
@@ -118,6 +117,11 @@ export function createMapApp({ store }) {
     preview.update();
     autosaveCurrentStateOnly();
   }
+
+  // Extra safety: make sure we persist on navigation/refresh even if something didn’t trigger onChange
+  window.addEventListener("beforeunload", () => {
+    autosaveCurrentStateOnly();
+  });
 
   centerOnUserLocation({ view });
 
