@@ -55,13 +55,19 @@ export function createMapApp({ store }) {
   // history created after draw (needs draw.styleFeature)
   let history = null;
 
+  // Autosave WITHOUT snapshotting (used after undo/redo so redo isn't wiped)
+  function autosaveCurrentStateOnly() {
+    if (!history) return;
+    const latest = history._debug.undoStack[history._debug.undoStack.length - 1];
+    if (latest) saveAutosave(latest);
+  }
+
+  // Commit: snapshot + autosave
   function snapshotAndAutosave() {
     if (!history) return;
     if (typeof history.snapshotNow === "function") history.snapshotNow();
     else history.snapshot();
-
-    const latest = history._debug.undoStack[history._debug.undoStack.length - 1];
-    if (latest) saveAutosave(latest);
+    autosaveCurrentStateOnly();
   }
 
   const onUserChange = () => {
@@ -78,7 +84,7 @@ export function createMapApp({ store }) {
 
   const edit = initEditTools({ map, vectorSource, onChange: onUserChange });
 
-  // NEW: measure tools (separate layer + interactions)
+  // Measure tools (separate layer + interactions)
   const measure = initMeasureTools({ map });
 
   // baseline snapshot (empty)
@@ -93,9 +99,11 @@ export function createMapApp({ store }) {
     });
     history.resetBaselineFromCurrent();
     preview.update();
+    autosaveCurrentStateOnly();
   }
 
   // Keyboard shortcuts for Undo/Redo
+  // IMPORTANT: Do NOT snapshot after undo/redo, or you'll clear the redo stack.
   window.addEventListener("keydown", (e) => {
     const isMac = navigator.platform?.toLowerCase?.().includes("mac");
     const mod = isMac ? e.metaKey : e.ctrlKey;
@@ -106,22 +114,21 @@ export function createMapApp({ store }) {
     // Avoid interfering with text inputs
     const target = e.target;
     const tag = target?.tagName?.toLowerCase?.();
-    const isTyping =
-      tag === "input" || tag === "textarea" || target?.isContentEditable;
+    const isTyping = tag === "input" || tag === "textarea" || target?.isContentEditable;
     if (isTyping) return;
 
     if (key === "z" && !e.shiftKey) {
       if (history?.undo?.()) {
         edit?.clearSelection?.();
         preview.update();
-        snapshotAndAutosave();
+        autosaveCurrentStateOnly();
       }
       e.preventDefault();
     } else if ((key === "z" && e.shiftKey) || key === "y") {
       if (history?.redo?.()) {
         edit?.clearSelection?.();
         preview.update();
-        snapshotAndAutosave();
+        autosaveCurrentStateOnly();
       }
       e.preventDefault();
     }
@@ -136,9 +143,10 @@ export function createMapApp({ store }) {
     layers: { osmLayer, esriLayer, vectorLayer },
     draw,
     edit,
-    measure, // <-- exposed
+    measure,
     preview,
     history,
-    snapshotAndAutosave,
+    snapshotAndAutosave,       // commit changes
+    autosaveCurrentStateOnly,  // keep autosave in sync after undo/redo
   };
 }

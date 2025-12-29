@@ -45,14 +45,21 @@ export function bindUI({ app, store }) {
     setDisabled("redoBtn", !app.history?.canRedo?.());
   };
 
+  // Commit change = snapshot + autosave
   const afterUserChange = () => {
     app.preview?.update?.();
     app.snapshotAndAutosave?.();
     syncHistoryButtons();
   };
 
-  // Apply current style controls to selected features (persist + restyle)
-  // This is the "commit" that makes changes stick after deselect/export/refresh.
+  // After undo/redo: NO snapshot (or redo dies)
+  const afterUndoRedo = () => {
+    app.preview?.update?.();
+    app.autosaveCurrentStateOnly?.();
+    syncHistoryButtons();
+  };
+
+  // Apply current style controls to selected features
   const commitSelectedStyle = () => {
     const selected = app.edit?.getSelectedFeatures?.() ?? [];
     if (!selected.length) return;
@@ -60,10 +67,9 @@ export function bindUI({ app, store }) {
     afterUserChange();
   };
 
-  // Debounced commit for slider/text input drag (prevents undo stack spam)
   const commitSelectedStyleDebounced = debounce(commitSelectedStyle, 200);
 
-  // --- MODE UI (Select vs Draw tools) ---
+  // --- MODE UI ---
   const MODE_BUTTON_IDS = [
     "selectMode",
     "drawPoint",
@@ -72,7 +78,6 @@ export function bindUI({ app, store }) {
     "drawCircle",
     "drawSquare",
     "drawRectangle",
-    // Measure modes (only active if buttons exist in HTML)
     "measureLine",
     "measureArea",
   ];
@@ -91,184 +96,105 @@ export function bindUI({ app, store }) {
   }
 
   function enableMeasure(mode, buttonId) {
-    // Prevent clashes: measuring should disable draw + clear selection
     app.draw?.deactivate?.();
     app.edit?.clearSelection?.();
-
     app.measure?.setMode?.(mode);
     setModeActive(buttonId);
   }
 
   // --- DRAW / SELECT ---
-  bindClick(
-    "selectMode",
-    () => {
-      disableMeasure();
-      app.draw.deactivate?.();
-      app.edit?.clearSelection?.();
-      setModeActive("selectMode");
-    },
-    { required: false }
-  );
+  bindClick("selectMode", () => {
+    disableMeasure();
+    app.draw.deactivate?.();
+    app.edit?.clearSelection?.();
+    setModeActive("selectMode");
+  });
 
-  bindClick(
-    "drawPoint",
-    () => {
-      disableMeasure();
-      app.draw.activate("Point", getStyleProps);
-      setModeActive("drawPoint");
-    },
-    { required: false }
-  );
+  bindClick("drawPoint", () => {
+    disableMeasure();
+    app.draw.activate("Point", getStyleProps);
+    setModeActive("drawPoint");
+  });
 
-  bindClick(
-    "drawLine",
-    () => {
-      disableMeasure();
-      app.draw.activate("LineString", getStyleProps);
-      setModeActive("drawLine");
-    },
-    { required: false }
-  );
+  bindClick("drawLine", () => {
+    disableMeasure();
+    app.draw.activate("LineString", getStyleProps);
+    setModeActive("drawLine");
+  });
 
-  bindClick(
-    "drawPolygon",
-    () => {
-      disableMeasure();
-      app.draw.activate("Polygon", getStyleProps);
-      setModeActive("drawPolygon");
-    },
-    { required: false }
-  );
+  bindClick("drawPolygon", () => {
+    disableMeasure();
+    app.draw.activate("Polygon", getStyleProps);
+    setModeActive("drawPolygon");
+  });
 
-  bindClick(
-    "drawCircle",
-    () => {
-      disableMeasure();
-      app.draw.activate("Circle", getStyleProps);
-      setModeActive("drawCircle");
-    },
-    { required: false }
-  );
+  bindClick("drawCircle", () => {
+    disableMeasure();
+    app.draw.activate("Circle", getStyleProps);
+    setModeActive("drawCircle");
+  });
 
-  bindClick(
-    "drawSquare",
-    () => {
-      disableMeasure();
-      app.draw.activate("Square", getStyleProps);
-      setModeActive("drawSquare");
-    },
-    { required: false }
-  );
+  bindClick("drawSquare", () => {
+    disableMeasure();
+    app.draw.activate("Square", getStyleProps);
+    setModeActive("drawSquare");
+  });
 
-  // Optional: only if the HTML has the button
-  bindClick(
-    "drawRectangle",
-    () => {
-      disableMeasure();
-      app.draw.activate("Rectangle", getStyleProps);
-      setModeActive("drawRectangle");
-    },
-    { required: false }
-  );
+  bindClick("drawRectangle", () => {
+    disableMeasure();
+    app.draw.activate("Rectangle", getStyleProps);
+    setModeActive("drawRectangle");
+  }, { required: false });
 
-  // --- MEASURE (optional buttons) ---
-  // Add buttons with these IDs in HTML to enable:
-  // - #measureLine  (distance)
-  // - #measureArea  (area)
-  // - #clearMeasure (clear measurements)
-  bindClick(
-    "measureLine",
-    () => {
-      enableMeasure("line", "measureLine");
-    },
-    { required: false }
-  );
+  // --- MEASURE ---
+  bindClick("measureLine", () => enableMeasure("line", "measureLine"), { required: false });
+  bindClick("measureArea", () => enableMeasure("area", "measureArea"), { required: false });
+  bindClick("clearMeasure", () => app.measure?.clear?.(), { required: false });
 
-  bindClick(
-    "measureArea",
-    () => {
-      enableMeasure("area", "measureArea");
-    },
-    { required: false }
-  );
+  // --- CLEAR ---
+  bindClick("clearDrawings", () => {
+    if (!confirm("Clear all drawings?")) return;
+    disableMeasure();
+    app.edit?.clearSelection?.();
+    app.draw.clear();
+    app.draw.deactivate?.();
+    setModeActive("selectMode");
+    afterUserChange();
+  });
 
-  bindClick(
-    "clearMeasure",
-    () => {
-      app.measure?.clear?.();
-    },
-    { required: false }
-  );
+  // --- DELETE ---
+  bindClick("deleteSelectedBtn", () => {
+    const n = app.edit?.deleteSelected?.() ?? 0;
+    if (n) afterUserChange();
+  });
 
-  bindClick(
-    "clearDrawings",
-    () => {
-      if (!confirm("Clear all drawings?")) return;
-      disableMeasure();
-      app.edit?.clearSelection?.();
-      app.draw.clear();
-      app.draw.deactivate?.();
-      setModeActive("selectMode");
-      afterUserChange();
-    },
-    { required: false }
-  );
-
-  // --- DELETE SELECTED ---
-  bindClick(
-    "deleteSelectedBtn",
-    () => {
-      const n = app.edit?.deleteSelected?.() ?? 0;
-      if (n) afterUserChange();
-    },
-    { required: false }
-  );
-
-  // Style controls apply to selected features.
-  // Important: use a debounced commit on "input" (slider drag),
-  // and a final immediate commit on "change" (release / final value).
+  // --- STYLE CONTROLS ---
   ["fillColor", "fillOpacity", "strokeColor", "strokeOpacity", "strokeWidth"].forEach((id) => {
     const el = $(id);
     if (!el) return;
 
-    el.addEventListener("input", () => {
-      // Live updates but don't spam history/autosave
-      commitSelectedStyleDebounced();
-    });
-
-    el.addEventListener("change", () => {
-      // Final commit as a real undo step
-      commitSelectedStyle();
-    });
+    el.addEventListener("input", () => commitSelectedStyleDebounced());
+    el.addEventListener("change", () => commitSelectedStyle());
   });
 
-  // --- UNDO / REDO ---
-  bindClick(
-    "undoBtn",
-    () => {
-      if (app.history?.undo?.()) {
-        disableMeasure();
-        app.edit?.clearSelection?.();
-        afterUserChange();
-      }
-    },
-    { required: false }
-  );
+  // ✅ FIXED UNDO / REDO
+  bindClick("undoBtn", () => {
+    if (app.history?.undo?.()) {
+      disableMeasure();
+      app.edit?.clearSelection?.();
+      afterUndoRedo();
+    }
+  });
 
-  bindClick(
-    "redoBtn",
-    () => {
-      if (app.history?.redo?.()) {
-        disableMeasure();
-        app.edit?.clearSelection?.();
-        afterUserChange();
-      }
-    },
-    { required: false }
-  );
+  bindClick("redoBtn", () => {
+    if (app.history?.redo?.()) {
+      disableMeasure();
+      app.edit?.clearSelection?.();
+      afterUndoRedo();
+    }
+  });
 
-  // --- PRINT PREVIEW CONTROLS ---
+  // --- PRINT PREVIEW ---
   $("#scale")?.addEventListener("change", () => {
     store.setState({ scale: $("#scale").value });
     afterUserChange();
@@ -284,53 +210,41 @@ export function bindUI({ app, store }) {
     afterUserChange();
   });
 
-  // --- SEARCH + LOCATE ---
-  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }), { required: false });
+  // --- SEARCH ---
+  bindClick("locateBtn", () => centerOnUserLocation({ view: app.view }));
 
-  bindClick(
-    "searchBtn",
-    async () => {
-      const q = ($("#searchInput")?.value || "").trim();
-      if (!q) return alert("Enter a place to search");
+  bindClick("searchBtn", async () => {
+    const q = ($("#searchInput")?.value || "").trim();
+    if (!q) return alert("Enter a place to search");
 
-      try {
-        const hit = await nominatimSearch(q);
-        if (!hit) return alert("No results found");
-
-        const lon = parseFloat(hit.lon);
-        const lat = parseFloat(hit.lat);
-        app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
-        app.view.setZoom(15);
-      } catch (e) {
-        console.error(e);
-        alert("Search failed. See console.");
-      }
-    },
-    { required: false }
-  );
+    try {
+      const hit = await nominatimSearch(q);
+      if (!hit) return alert("No results found");
+      const lon = parseFloat(hit.lon);
+      const lat = parseFloat(hit.lat);
+      app.view.setCenter(ol.proj.fromLonLat([lon, lat]));
+      app.view.setZoom(15);
+    } catch (e) {
+      console.error(e);
+      alert("Search failed. See console.");
+    }
+  });
 
   // --- QUICK PRINT ---
-  bindClick(
-    "quickPrint",
-    () => {
-      const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
-      if (!isOSM) {
-        alert("Quick Print only works with OSM due to browser security limits.");
-        return;
-      }
+  bindClick("quickPrint", () => {
+    const isOSM = app.layers.osmLayer?.getVisible?.() ?? true;
+    if (!isOSM) return alert("Quick Print only works with OSM.");
 
-      const canvas = app.map.getViewport().querySelector("canvas");
-      if (!canvas) return alert("Canvas not available.");
+    const canvas = app.map.getViewport().querySelector("canvas");
+    if (!canvas) return alert("Canvas not available.");
 
-      const url = canvas.toDataURL("image/png");
-      const win = window.open("", "_blank");
-      win.document.write(`<img src="${url}" alt="Map Snapshot" style="max-width:100%;" />`);
-    },
-    { required: false }
-  );
+    const url = canvas.toDataURL("image/png");
+    const win = window.open("", "_blank");
+    win.document.write(`<img src="${url}" style="max-width:100%;" />`);
+  });
 
-  // --- GEOJSON IMPORT/EXPORT ---
-  bindClick("importGeoJSON", () => $("#geojsonFile")?.click(), { required: false });
+  // --- GEOJSON ---
+  bindClick("importGeoJSON", () => $("#geojsonFile")?.click());
 
   $("#geojsonFile")?.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
@@ -350,37 +264,29 @@ export function bindUI({ app, store }) {
     afterUserChange();
   });
 
-  bindClick(
-    "exportGeoJSON",
-    () => {
-      const text = exportGeoJSON({ vectorSource: app.vectorSource });
-      const blob = new Blob([text], { type: "application/geo+json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "truegis-drawings.geojson";
-      a.click();
-    },
-    { required: false }
-  );
+  bindClick("exportGeoJSON", () => {
+    const text = exportGeoJSON({ vectorSource: app.vectorSource });
+    const blob = new Blob([text], { type: "application/geo+json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "truegis-drawings.geojson";
+    a.click();
+  });
 
-  // --- SCALED PRINT ---
-  bindClick(
-    "print",
-    async () => {
-      const btn = $("#print");
-      try {
-        if (btn) btn.disabled = true;
-        const spec = buildInkmapSpec({ app, store });
-        await inkmapPrint(spec);
-      } catch (e) {
-        console.error("❌ Inkmap error:", e);
-        alert("Print failed. See console.");
-      } finally {
-        if (btn) btn.disabled = false;
-      }
-    },
-    { required: false }
-  );
+  // --- PRINT ---
+  bindClick("print", async () => {
+    const btn = $("#print");
+    try {
+      if (btn) btn.disabled = true;
+      const spec = buildInkmapSpec({ app, store });
+      await inkmapPrint(spec);
+    } catch (e) {
+      console.error("❌ Inkmap error:", e);
+      alert("Print failed.");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
 
   // initial
   app.preview?.update?.();

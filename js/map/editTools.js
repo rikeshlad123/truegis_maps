@@ -59,14 +59,30 @@ export function initEditTools({ map, vectorSource, onChange }) {
     pixelTolerance: 10,
   });
 
-  // Geometry edits should snapshot/autosave
-  modify.on("modifyend", () => onChange?.());
+  // Track an active modify gesture so we only commit once per drag session.
+  // (Some OL setups can trigger multiple modifyend-ish sequences depending on input.)
+  let isModifying = false;
+
+  modify.on("modifystart", () => {
+    isModifying = true;
+  });
+
+  // Geometry edits should snapshot/autosave once the gesture ends
+  modify.on("modifyend", () => {
+    if (!isModifying) return;
+    isModifying = false;
+    onChange?.();
+  });
 
   map.addInteraction(select);
   map.addInteraction(modify);
 
   function getSelectedFeatures() {
     return select.getFeatures().getArray();
+  }
+
+  function hasSelection() {
+    return select.getFeatures().getLength() > 0;
   }
 
   function clearSelection() {
@@ -135,6 +151,7 @@ export function initEditTools({ map, vectorSource, onChange }) {
     select,
     modify,
     getSelectedFeatures,
+    hasSelection,
     clearSelection,
     deleteSelected,
     applyStyleToSelected,
