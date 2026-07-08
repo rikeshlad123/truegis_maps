@@ -7,10 +7,11 @@ import { bindUI } from "./ui/bindings.js";
 initInkmapServiceWorker();
 
 function readInitialUIState() {
+  const paperSize = document.getElementById("paperSize")?.value || "A4";
   const orientation = document.getElementById("orientation")?.value || "landscape";
   const scale = document.getElementById("scale")?.value || "5000";
   const showPreview = document.getElementById("showPreview")?.checked ?? false;
-  return { orientation, scale, showPreview };
+  return { paperSize, orientation, scale, showPreview };
 }
 
 // Prevent browser-native undo/redo from hijacking Ctrl+Z/Ctrl+Y on the page.
@@ -52,9 +53,9 @@ function init() {
 
   installUndoRedoGuard();
 
-  const { orientation, scale, showPreview } = readInitialUIState();
+  const { paperSize, orientation, scale, showPreview } = readInitialUIState();
 
-  const store = createStore({ orientation, scale, showPreview });
+  const store = createStore({ paperSize, orientation, scale, showPreview });
   const app = createMapApp({ store });
 
   bindUI({ app, store });
@@ -63,7 +64,7 @@ function init() {
   window.TrueGIS = { app, store };
 
   // Optional: quick sanity log
-  // console.log("[TrueGIS] bootstrapped", { orientation, scale, showPreview });
+  // console.log("[TrueGIS] bootstrapped", { paperSize, orientation, scale, showPreview });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
