@@ -2,6 +2,7 @@ import { createStore } from "./state/store.js";
 import { initInkmapServiceWorker } from "./print/inkmapInit.js";
 import { createMapApp } from "./map/createMap.js";
 import { bindUI } from "./ui/bindings.js";
+import { bindDdpUI } from "./ddp/bindDdpUI.js";
 
 // Register Inkmap worker as early as possible
 initInkmapServiceWorker();
@@ -59,6 +60,7 @@ function init() {
   const app = createMapApp({ store });
 
   bindUI({ app, store });
+  bindDdpUI({ app, store });
 
   // Handy debug access in DevTools
   window.TrueGIS = { app, store };
