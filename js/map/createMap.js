@@ -15,6 +15,22 @@ export function createMapApp({ store }) {
   const vectorSource = new ol.source.Vector();
   const vectorLayer = new ol.layer.Vector({ source: vectorSource });
 
+  const ddpSource = new ol.source.Vector();
+  const ddpLayer = new ol.layer.Vector({
+    source: ddpSource,
+    style: (feature) =>
+      new ol.style.Style({
+        fill: new ol.style.Fill({ color: "rgba(47, 128, 255, 0.08)" }),
+        stroke: new ol.style.Stroke({ color: "rgba(47, 128, 255, 0.95)", width: 2, lineDash: [8, 6] }),
+        text: new ol.style.Text({
+          text: String(feature.get("page_no") || ""),
+          fill: new ol.style.Fill({ color: "#ffffff" }),
+          stroke: new ol.style.Stroke({ color: "#000000", width: 3 }),
+          font: "bold 14px Segoe UI, sans-serif",
+        }),
+      }),
+  });
+
   const osmLayer = new ol.layer.Tile({
     source: new ol.source.OSM(),
     visible: true,
@@ -34,7 +50,7 @@ export function createMapApp({ store }) {
 
   const map = new ol.Map({
     target: "map",
-    layers: [osmLayer, esriLayer, vectorLayer],
+    layers: [osmLayer, esriLayer, ddpLayer, vectorLayer],
     view,
     rendererOptions: {
       willReadFrequently: true,
@@ -166,7 +182,8 @@ export function createMapApp({ store }) {
     map,
     view,
     vectorSource,
-    layers: { osmLayer, esriLayer, vectorLayer },
+    ddpSource,
+    layers: { osmLayer, esriLayer, ddpLayer, vectorLayer },
     draw,
     edit,
     measure,
