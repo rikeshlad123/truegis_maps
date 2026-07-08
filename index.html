@@ -112,7 +112,7 @@
           "Draw points, lines, polygons, circles, and squares",
           "Per-feature styling with fill, stroke, opacity, and width",
           "Search and geolocation",
-          "Quick and scaled printing"
+          "Quick, scaled, and intelligent multi-page printing"
         ]
       }
     </script>
@@ -229,8 +229,21 @@
 
       <!-- Print Settings -->
       <div class="control-group">
+        <label for="paperSize">Paper:</label>
+        <select id="paperSize">
+          <option value="A4" selected>A4</option>
+          <option value="A3">A3</option>
+          <option value="A2">A2</option>
+          <option value="A1">A1</option>
+          <option value="A0">A0</option>
+        </select>
+
         <label for="scale">Scale:</label>
         <select id="scale">
+          <option value="500">1:500</option>
+          <option value="750">1:750</option>
+          <option value="1000">1:1,000</option>
+          <option value="1250">1:1,250</option>
           <option value="2500">1:2,500</option>
           <option value="5000" selected>1:5,000</option>
           <option value="10000">1:10,000</option>
@@ -247,6 +260,22 @@
         <label
           ><input type="checkbox" id="showPreview" /> Show Print Area</label
         >
+      </div>
+
+      <!-- Smart DDP -->
+      <div class="control-group ddp-group" aria-label="Smart DDP multi-page print">
+        <strong>Smart DDP:</strong>
+        <label for="ddpBuffer">Buffer (m):</label>
+        <input id="ddpBuffer" type="number" min="0" step="1" value="0" />
+
+        <label for="ddpOverlap">Overlap %:</label>
+        <input id="ddpOverlap" type="number" min="0" max="80" step="1" value="20" />
+
+        <button id="generateDdp" type="button">Create DDP Layer</button>
+        <button id="printDdp" type="button">DDP Multi-Page PDF</button>
+        <button id="exportDdp" type="button">Download DDP</button>
+        <button id="clearDdp" type="button">Clear DDP</button>
+        <span id="ddpStatus" class="ddp-status">North-up pages. Joystick overlap allowed.</span>
       </div>
 
       <!-- Print -->
@@ -299,6 +328,7 @@
     </footer>
 
     <script src="dist/inkmap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
     <script type="module" src="js/bootstrap.js"></script>
 
