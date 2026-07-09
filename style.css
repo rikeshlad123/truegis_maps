@@ -32,6 +32,78 @@ body{
 }
 
 /* =======================
+   Daily Quote
+======================= */
+.daily-quote[hidden]{ display:none; }
+
+.daily-quote{
+  width:100%;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:9px 52px 9px 16px;
+  position:relative;
+  background:linear-gradient(90deg, rgba(133,255,76,.14), rgba(28,29,29,.95), rgba(133,255,76,.1));
+  border-bottom:1px solid rgba(133,255,76,.24);
+  color:var(--text);
+  font-size:14px;
+}
+
+.daily-quote p{
+  max-width:1000px;
+  margin:0;
+  line-height:1.35;
+  text-align:center;
+}
+
+.daily-quote__label{
+  display:inline-block;
+  margin-right:8px;
+  color:var(--accent);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.daily-quote__text{ color:var(--text); }
+
+.daily-quote__author{
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+.daily-quote button{
+  position:absolute;
+  top:50%;
+  right:12px;
+  transform:translateY(-50%);
+  width:28px;
+  height:28px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:999px;
+  background:rgba(0,0,0,.28);
+  color:var(--text);
+  cursor:pointer;
+  font-size:18px;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.daily-quote button:hover,
+.daily-quote button:focus-visible{
+  background:var(--accent);
+  color:#000;
+  border-color:var(--accent);
+  outline:none;
+}
+
+/* =======================
    Site Header (generic <header>)
 ======================= */
 header{
@@ -303,6 +375,15 @@ main small{ color:var(--muted); display:block; margin-top:8px; }
 @media (max-width:768px){
   header img{ width:160px; }
   header .tagline{ font-size:13px; }
+
+  .daily-quote{
+    align-items:flex-start;
+    justify-content:flex-start;
+    padding:10px 48px 10px 12px;
+  }
+  .daily-quote p{ text-align:left; }
+  .daily-quote__label{ display:block; margin:0 0 2px; }
+  .daily-quote__author{ white-space:normal; }
 
   #map{ height:50vh; width:100%; }
 
