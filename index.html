@@ -119,6 +119,17 @@
   </head>
 
   <body>
+    <div class="daily-quote" id="dailyQuote" data-daily-quote hidden>
+      <p>
+        <span class="daily-quote__label">Daily map thought</span>
+        <span class="daily-quote__text" data-quote-text></span>
+        <span class="daily-quote__author" data-quote-author></span>
+      </p>
+      <button type="button" data-quote-dismiss aria-label="Dismiss daily quote">
+        &times;
+      </button>
+    </div>
+
     <header>
       <div class="social-links top-right">
         <a
@@ -300,6 +311,7 @@
 
     <script src="dist/inkmap.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+    <script src="js/dailyQuote.js"></script>
     <script type="module" src="js/bootstrap.js"></script>
 
     <script>
